@@ -3829,7 +3829,7 @@ function bindEvents() {
   document.addEventListener('click', e => {
     const panel = $("#archives-panel");
     const btn = $("#archives-btn");
-    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
+    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== btn) {
       panel.classList.remove("active");
     }
     });
