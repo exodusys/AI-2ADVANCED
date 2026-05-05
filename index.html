@@ -3821,18 +3821,15 @@ function bindEvents() {
   document.addEventListener('click', e => {
     const panel = $("#memory-panel");
     const toggle = $("#memory-toggle");
+    
+    const panel = $("#archives-panel");
+    const btn = $("#archives-btn");
+    
     if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
       panel.classList.remove("active");
     }
   });
-  // Close archive panel on outside click
-  document.addEventListener('click', e => {
-    const panel = $("#archives-panel");
-    const btn = $("#archives-btn");
-    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== btn) {
-      panel.classList.remove("active");
-    }
-    });
+  
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
