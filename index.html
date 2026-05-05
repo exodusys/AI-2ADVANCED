@@ -3828,8 +3828,8 @@ function bindEvents() {
   // Close memory panel on outside click
   document.addEventListener('click', e => {
     const panel = $("#archives-panel");
-    const toggle = $("#archives-btn");
-    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
+    const btn = $("#archives-btn");
+    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== btn) {
       panel.classList.remove("active");
     }
   });
