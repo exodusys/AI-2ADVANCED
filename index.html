@@ -3394,9 +3394,9 @@ function bindEvents() {
     renderArchives();
   };
 
-  //const closeArchivesPanel = () => {
-    //archivesPanel.classList.remove("active");
-  //};
+  const closeArchivesPanel = () => {
+    archivesPanel.classList.remove("active");
+  };
 
   if (archivesBtn) {
     archivesBtn.onclick = e => {
@@ -3594,7 +3594,7 @@ function bindEvents() {
   };
 
   // Memory
-  $("#memory-toggle").onclick = () => $("#memory-panel").classList.toggle("active");
+  //$("#memory-toggle").onclick = () => $("#memory-panel").classList.toggle("active");
   $("#memory-add").onclick = async () => {
     const txt = $("#memory-input").value.trim();
     if (!txt) return;
