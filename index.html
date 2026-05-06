@@ -2534,7 +2534,7 @@ function hideTyping() {
 // SYSTEM PROMPT
 // ════════════════════════════════════════
 function buildSystemPrompt() {
-  const aiName = state.aiConfig?.name || 'id="main-brand-name"';
+  const aiName = state.aiConfig?.name || 'VOANH';
   let prompt = `You are ${aiName}, a powerful AI assistant. Be precise, professional, and helpful.`;
   if (state.agent) {
     prompt = `[AGENT ${aiName} : ${state.agent.name}]\n`;
@@ -2856,7 +2856,7 @@ async function exportData() {
     const payload = {
       version: "2.0",
       exported: new Date().toISOString(),
-      source: id="main-brand-name",
+      source: "VOANH",
       data: { chats, agents, global_memory: mems, settings }
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
