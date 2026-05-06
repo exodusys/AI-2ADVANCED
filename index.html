@@ -3267,7 +3267,7 @@ function initWizardEvents() {
   // Finish
   document.getElementById('wizard-finish').onclick = async () => {
     hideWizard();
-    toast(`Bienvenue sur ${state.aiConfig?.name || 'VOANH'} AI !`, "success");
+    toast(`Bienvenue sur ${state.aiConfig?.name || 'Votre AI'} AI !`, "success");
   };
 
   // Retry
@@ -3786,7 +3786,7 @@ function bindEvents() {
   if ($("#btn-export")) $("#btn-export").onclick = exportData;
 
   if ($("#btn-clear-all")) $("#btn-clear-all").onclick = async () => {
-    if (!confirm("⚠ Supprimer TOUTES les données locales VOANH ? Cette action est irréversible.")) return;
+    if (!confirm("⚠ Supprimer TOUTES les données locales  ? Cette action est irréversible.")) return;
     const stores = ['chats','agents','settings','global_memory'];
     for (const s of stores) {
       const all = await db.getAll(s) || [];
