@@ -2856,7 +2856,7 @@ async function exportData() {
     const payload = {
       version: "2.0",
       exported: new Date().toISOString(),
-      source: "VOANH",
+      source: id="main-brand-name",
       data: { chats, agents, global_memory: mems, settings }
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
