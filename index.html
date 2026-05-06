@@ -507,9 +507,8 @@ body::before {
   letter-spacing: 2px;
   color: var(--cyan);
 }
-.memory-list { height: 100%; overflow-y: auto; font-size: 12px; }
+.memory-list { bottom: 70px; height: 100%; overflow-y: auto; font-size: 12px; }
 .memory-item {
-  bottom: 70px;
   padding: 7px 0;
   border-bottom: 1px solid var(--grid);
   display: flex;
@@ -518,7 +517,7 @@ body::before {
   gap: 8px;
 }
 .memory-item:last-child { border-bottom: none; }
-.memory-item .content { bottom: 70px; flex: 1; color: var(--text); font-family: var(--font-mono); font-size: 11px; line-height: 1.4; }
+.memory-item .content { flex: 1; color: var(--text); font-family: var(--font-mono); font-size: 11px; line-height: 1.4; }
 .memory-item .actions button {
   padding: 2px 6px;
   font-size: 10px;
