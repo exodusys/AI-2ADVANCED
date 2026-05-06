@@ -384,7 +384,7 @@ body::before {
 #input-area {
   background: rgba(5,13,24,0.95);
   border-top: var(--hud-border);
-  padding: 12px 16px;
+  padding: 1px 16px;
   display: flex;
   gap: 10px;
   align-items: flex-end;
@@ -3538,6 +3538,7 @@ function bindEvents() {
 
   // Send
   $("#send-btn").onclick = sendMessage;
+  $("#user-input").onclick = autoResizeTextarea;
   $("#user-input").oninput = autoResizeTextarea;
   $("#user-input").onkeydown = e => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
