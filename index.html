@@ -3828,7 +3828,7 @@ function bindEvents() {
       $("#import-summary").innerHTML = `
         <strong style="color:var(--neon)">✓ Fichier valide</strong><br>
         ${exported}<br>
-        ▸ ${nbChats} conversation(s) &nbsp;|&nbsp; ${nbAgents} agent(s) &nbsp;|&nbsp; ${nbMems} souvenir(s)
+        ▸q ${nbChats} conversation(s) &nbsp;|&nbsp; ${nbAgents} agent(s) &nbsp;|&nbsp; ${nbMems} souvenir(s)
       `;
     } catch(e) {
       $("#import-summary").innerHTML = `<span style="color:var(--danger)">⚠ Fichier invalide ou corrompu : ${e.message}</span>`;
