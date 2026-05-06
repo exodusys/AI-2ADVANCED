@@ -2491,7 +2491,7 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = `message ${m.role}`;
     const memTags = m.memoryUsed?.length ? `<span class="mem-tag">⬡ MEM×${m.memoryUsed.length}</span>` : '';
-    const label = m.role === 'user' ? '▸ VOUS' : `▸ ${state.agent ? state.agent.name.toUpperCase() : 'id="wizard-ai-name"'}`;
+    const label = m.role === 'user' ? '▸ VOUS' : `▸ ${state.agent ? state.agent.name.toUpperCase() : 'Votre AI'}`;
     const msgId = m.ts || Date.now();
     const memoBtn = m.role === 'assistant' ? '<button class="msg-action-btn" onclick="saveToMemory(' + msgId + ')">⬡ MÉMO</button>' : '';
     const printBtn = m.role === 'assistant' ? '<button class="msg-action-btn" onclick="window.print()">🖨 PDF</button>' : '';
@@ -2534,7 +2534,7 @@ function hideTyping() {
 // SYSTEM PROMPT
 // ════════════════════════════════════════
 function buildSystemPrompt() {
-  const aiName = state.aiConfig?.name || 'VOANH';
+  const aiName = state.aiConfig?.name || 'Votre AI';
   let prompt = `You are ${aiName}, a powerful AI assistant. Be precise, professional, and helpful.`;
   if (state.agent) {
     prompt = `[AGENT ${aiName} : ${state.agent.name}]\n`;
@@ -2856,7 +2856,7 @@ async function exportData() {
     const payload = {
       version: "2.0",
       exported: new Date().toISOString(),
-      source: "VOANH",
+      source: "Votre AI",
       data: { chats, agents, global_memory: mems, settings }
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
