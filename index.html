@@ -646,7 +646,7 @@ body::before {
 #archives-panel {
   position: fixed;
   left: 25px;
-  bottom: 110px;
+  bottom: 120px;
   width: 290px;
   height: 60%;
   background: rgba(9,21,37,0.97);
@@ -665,7 +665,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 8px;
+  padding: 16px 6px;
   border-bottom: var(--border);
   flex-shrink: 0;
 }
@@ -700,9 +700,14 @@ body::before {
 }
 .archives-search input:focus { border-color: var(--cyan); }
 .archives-list { 
-  flex: 1; 
+  
+  
   overflow-y: auto; 
-  padding: 6px 0; 
+  height: calc(100% - 110px);
+  bottom: 130px;
+  font-size: 11px; 
+  
+  
 }
 .archive-item {
   padding: 9px 12px;
