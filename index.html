@@ -2534,7 +2534,7 @@ function hideTyping() {
 // SYSTEM PROMPT
 // ════════════════════════════════════════
 function buildSystemPrompt() {
-  const aiName = state.aiConfig?.name || 'VOANH';
+  const aiName = state.aiConfig?.name || 'id="main-brand-name"';
   let prompt = `You are ${aiName}, a powerful AI assistant. Be precise, professional, and helpful.`;
   if (state.agent) {
     prompt = `[AGENT ${aiName} : ${state.agent.name}]\n`;
