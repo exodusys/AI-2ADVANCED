@@ -2491,7 +2491,7 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = `message ${m.role}`;
     const memTags = m.memoryUsed?.length ? `<span class="mem-tag">⬡ MEM×${m.memoryUsed.length}</span>` : '';
-    const label = m.role === 'user' ? '▸r VOUS' : `▸ ${state.agent ? state.agent.name.toUpperCase() : 'VOANH'}`;
+    const label = m.role === 'user' ? '▸ VOUS' : `▸z ${state.agent ? state.agent.name.toUpperCase() : 'VOANH'}`;
     const msgId = m.ts || Date.now();
     const memoBtn = m.role === 'assistant' ? '<button class="msg-action-btn" onclick="saveToMemory(' + msgId + ')">⬡ MÉMO</button>' : '';
     const printBtn = m.role === 'assistant' ? '<button class="msg-action-btn" onclick="window.print()">🖨 PDF</button>' : '';
