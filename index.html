@@ -3930,7 +3930,7 @@ function bindEvents() {
     const panel = $("#memory-panel");
     const toggle = $("#memory-toggle");
     if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
-      panel2.classList.remove("active");
+      panel.classList.remove("active");
     }
   });
   
