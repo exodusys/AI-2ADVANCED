@@ -3538,7 +3538,7 @@ function bindEvents() {
 
   // Send
   $("#send-btn").onclick = sendMessage;
-  $("#user-input").onclick = autoResizeTextarea;
+  $("#user-input").onclick = autoResizeTextarea; cursor: pointer;
   $("#user-input").oninput = autoResizeTextarea;
   $("#user-input").onkeydown = e => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
