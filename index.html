@@ -447,10 +447,6 @@ body::before {
 
 
 /* ═══ MEMORY PANEL ═══ */
-
-
-
-
 #memory-toggle {
   position: fixed;
   right: 25px;
@@ -470,19 +466,11 @@ body::before {
   box-shadow: 0 0 15px var(--cyan-dim);
   transition: var(--transition);
 }
-
 #memory-toggle:hover {
   box-shadow: 0 0 25px var(--cyan-glow);
   border-color: var(--cyan);
 }
-
 #memory-panel {
-  
-  
-  
-  
-  
-  
   position: fixed;
   right: 16px;
   bottom: 120px;
@@ -497,52 +485,16 @@ body::before {
   transform: translateX(calc(100% + 20px));
   transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
   backdrop-filter: blur(20px);
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 }
 #memory-panel.active { transform: translateX(0); }
 .memory-header {
-  
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0px;
   padding-bottom: 14px;
   border-bottom: var(--border);
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 }
-
 .memory-header h3 {
   font-family: var(--font-display);
   font-size: 11px;
@@ -550,24 +502,16 @@ body::before {
   letter-spacing: 2px;
   color: var(--cyan);
 }
-
 .memory-list { 
   overflow-y: auto;
   height: calc(100% - 110px);
   font-size: 11px; 
-  
-  
   margin-right: 0px;
   margin-left: 0px;
   margin-top: 10px;
   margin-bottom: 0px;
-  
-  
-
- 
 }
 .memory-item {
-  
   padding: 0px 0px;
   border-bottom: 1px solid var(--grid);
   display: flex;
@@ -576,8 +520,6 @@ body::before {
   text-align: justify;
   text-justify: inter-word;
   margin-right: 10px;
-  
-  
 }
 .memory-item:last-child { margin-bottom: 1px; border-bottom: none; }
 .memory-item .content { 
@@ -645,40 +587,6 @@ body::before {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ═══ ARCHIVES PANEL ═══ */
 #archives-btn {
   position: fixed;
@@ -719,19 +627,12 @@ body::before {
 }
 #archives-panel.active { transform: translateX(0); }
 .archives-header {
-  
-  
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 12px;
   border-bottom: var(--border);
   flex-shrink: 0;
-  
-  
-  
-  
-  
 }
 .archives-header h3 { 
   font-family: var(--font-display); 
@@ -740,12 +641,6 @@ body::before {
   letter-spacing: 2px; 
   color: var(--cyan); 
 }
-
-
-
-
-
-
 .archives-search { 
   padding: 8px 10px; 
   border-bottom: var(--border); 
@@ -764,8 +659,6 @@ body::before {
 }
 .archives-search input:focus { border-color: var(--cyan); }
 .archives-list { 
-  
-  
   overflow-y: auto; 
   bottom: 130px;
   font-size: 11px; 
@@ -773,24 +666,14 @@ body::before {
   margin-left: 10px;
   margin-top: 10px;
   margin-bottom: 10px;
-  
 }
 .archive-item {
-  
-  
-  
   padding: 9px 12px;
   border-bottom: 1px solid var(--grid);
-
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
-  
-  
-  
-  
-  
-  
 }
 .archive-item:last-child { border-bottom: none; }
 .archive-item:hover { background: var(--hull); }
@@ -804,6 +687,20 @@ body::before {
 .archive-fav-btn { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 11px; padding: 2px; flex-shrink: 0; }
 .archive-fav-btn.fav { color: var(--gold); }
 .archive-empty { padding: 20px 14px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
