@@ -3515,7 +3515,7 @@ function bindEvents() {
   if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SR();
-    recognition.lang = 'fr-FR'; recognition.continuous = false; recognition.interimResults = false;
+    recognition.lang = 'fr-FR'; recognition.continuous = false; recognition.interimResults = true;
     let isRecording = false;
     voiceBtn.onclick = () => {
       if (isRecording) { recognition.stop(); return; }
