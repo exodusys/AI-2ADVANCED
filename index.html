@@ -3156,46 +3156,9 @@ function initWizardEvents() {
   };
 
   // Step 2 back
+  document.getElementById('wizard-step2-back').onclick = () => loadAgents();
 
-document.getElementById('wizard-skip-gen').onclick = () => {
-    hideWizard();
-    toast("Configuration terminée sans génération d'agents", "info");
-  };
-}
 
-async function runAgentGeneration(name, goal) {
-  const genDetail = document.getElementById('wizard-gen-detail');
-  const loader = document.getElementById('wizard-gen-loader');
-  const preview = document.getElementById('wizard-agents-preview');
-  const errDiv = document.getElementById('wizard-gen-error');
-  const grid = document.getElementById('wizard-agents-grid');
-
-  loader.style.display = 'block';
-  preview.style.display = 'none';
-  errDiv.style.display = 'none';
-
-  const steps = [
-    "Analyse de votre profil…",
-    "Identification des domaines clés…",
-    "Génération des spécialités…",
-    "Construction des instructions…",
-    "Finalisation des agents…"
-  ];
-  let si = 0;
-  const interval = setInterval(() => {
-    if (si < steps.length) { genDetail.textContent = steps[si++]; }
-  }, 1200);
-
-  try {
-    const agents = await generateAgentsWithMistral(state.apiKey, name, goal);
-    clearInterval(interval);
-
-    // Save agents
-    for (const agData of agents) {
-      const agent = { id: uuid(), ...agData, primer: "", created: now() };
-      await db.put('agents', agent);
-    }
-    await loadAgents();
    // document.getElementById('wizard-step2-back').onclick = () => setWizardStep(1);
 
   // Step 2 → Step 3 (generate)
