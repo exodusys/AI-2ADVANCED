@@ -1210,7 +1210,7 @@ body::before {
   #chat-container { padding: 14px 12px; }
   .message { max-width: 95%; }
   #memory-panel { width: calc(100% - 32px); right: 16px; bottom: 110px; left: auto; }
-  #archives-panel { width: calc(100% - 32px); left: 16px; bottom: 110px; max-height: 65vh; }
+  #archives-panel { width: calc(100% - 32px); left: 16px; bottom: 110px; right: auto; }
   .modal-overlay { padding: 0; align-items: flex-end; }
   .modal-box { max-height: 92dvh; border-radius: var(--r-lg) var(--r-lg) 0 0; max-width: 100%; }
   @keyframes modalIn {
@@ -1590,7 +1590,7 @@ body::before {
 @media print {
   #voanh-header, #input-area, #memory-toggle, #memory-panel,
   #archives-btn, #archives-panel, #scroll-bottom, .modal-overlay,
-  #mobile-menu, #toast-container, .msg-actions, .msg-label, .msg-rating, .msg-meta, .msg-tag { display: none !important; }
+  #mobile-menu, #toast-container, .msg-actions, .msg-rating, { display: none !important; }
   body { overflow: auto !important; background: white !important; color: #000 !important; }
   .message { border: 1px solid #ccc !important; background: #f9f9f9 !important; }
   .message.user { background: #e8f4ff !important; }
