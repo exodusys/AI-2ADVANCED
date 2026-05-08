@@ -661,7 +661,6 @@ body::before {
 .archives-search input:focus { border-color: var(--cyan); }
 .archives-list { 
   overflow-y: auto; 
-  
   font-size: 12px; 
   margin-right: 10px;
   margin-left: 10px;
@@ -718,7 +717,7 @@ body::before {
 @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(255,51,102,0.4)}50%{box-shadow:0 0 0 6px rgba(255,51,102,0)} }
 
 /* ═══ SCROLL TO BOTTOM ═══ */
-#scroll-bottom { position: fixed; right: 20px; bottom: 100px; z-index: 200; width: 34px; height: 34px; border-radius: 50%; background: var(--hull); border: var(--hud-border); color: var(--cyan); font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: var(--transition); }
+#scroll-bottom { position: fixed; right: 20px; bottom: 120px; z-index: 200; width: 34px; height: 34px; border-radius: 50%; background: var(--hull); border: var(--hud-border); color: var(--cyan); font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: var(--transition); }
 #scroll-bottom.visible { display: flex; }
 #scroll-bottom:hover { border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow); }
 
@@ -1221,7 +1220,7 @@ body::before {
   #input-area { padding: 8px 10px; gap: 7px; }
   #send-btn { padding: 10px 14px; font-size: 12px; }
   #voice-btn { width: 40px; height: 40px; font-size: 14px; }
-  #scroll-bottom { right: 20px; bottom:110px; }
+  #scroll-bottom { right: 20px; bottom:100px; }
   #archives-btn { right: 100px; top:10px; }
   #memory-toggle { right: 25px; top:10px; }
 }
