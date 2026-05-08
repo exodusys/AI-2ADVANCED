@@ -3898,15 +3898,15 @@ function bindEvents() {
     if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
       panel.classList.remove("active");
     }
-    // Close archive panel on outside click
+  });
+  
+  // Close archive panel on outside click
   document.addEventListener('click', e => {
     const panel = $("#archive-panel");
     const toggle = $("#archive-btn");
     if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
       panel.classList.remove("active");
     }
-    
-    
   });
 }
 </script>
