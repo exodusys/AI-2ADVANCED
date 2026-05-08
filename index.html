@@ -3900,14 +3900,7 @@ function bindEvents() {
     }
   });
   
-  // Close archive panel on outside click
-  document.addEventListener('click', e => {
-    const panel = $("#archive-panel");
-    const toggle = $("#archive-btn");
-    if (panel.classList.contains("active") && !panel.contains(e.target) && e.target !== toggle) {
-      panel.classList.remove("active");
-    }
-  });
+  
 }
 </script>
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
