@@ -3539,7 +3539,7 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
-      
+      voiceBtn.classList.remove("recording");
     };
     recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
     recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
