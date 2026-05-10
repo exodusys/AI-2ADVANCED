@@ -3541,17 +3541,12 @@ function bindEvents() {
       sendMessage();
       
       
-      const pause = (ms) => new Promise(res => setTimeout(res, ms));
-
-async function lireMessage() {
-    const message = new SpeechSynthesisUtterance("Bonjour, je lis ce message après une pause.");
-    message.lang = 'fr-FR'; // Définit la langue en français
-
-    console.log("Attente de 2 secondes...");
-    await pause(2000);
-
-    window.speechSynthesis.speak(message);
-}
+      
+<script src="https://responsivevoice.org"></script>
+<script>
+  // Commande ultra simple
+  responsiveVoice.speak("Bonjour tout le monde", "French Female");
+</script>
       
       
       
