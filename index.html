@@ -3542,17 +3542,17 @@ function bindEvents() {
       
       
       
- const message = new SpeechSynthesisUtterance();
+ function lireAvecGoogle(texte) {
+  const url = `https://google.com{encodeURIComponent(texte)}&tl=fr&client=tw-ob`;
+  
+  const audio = new Audio(url);
+  audio.play();
+}
 
-message.text = "Bonjour, j'apprends l'API Web Speech.";
-message.lang = 'fr-FR'; // Langue (très important pour l'accent)
-message.pitch = 1.2;    // Hauteur (0 à 2) : plus aigu ou plus grave
-message.rate = 0.9;     // Vitesse (0.1 à 10) : 1 est la vitesse normale
-message.volume = 1;     // Volume (0 à 1)
+// Utilisation
+lireAvecGoogle("Bonjour, ceci est une alternative à l'API native.");
 
-window.speechSynthesis.speak(message);
 
-      
       
       
       
