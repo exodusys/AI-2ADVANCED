@@ -3542,7 +3542,19 @@ function bindEvents() {
       
       
       
- function lireAvecGoogle(texte) {
+ 
+      
+      
+      
+    };
+    recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
+    recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
+  } else if (voiceBtn) {
+    voiceBtn.style.display = "none";
+  }
+
+
+function lireAvecGoogle(texte) {
   const url = `https://google.com{encodeURIComponent(texte)}&tl=fr&client=tw-ob`;
   
   const audio = new Audio(url);
@@ -3553,15 +3565,8 @@ function bindEvents() {
 lireAvecGoogle("Bonjour, ceci est une alternative à l'API native.");
 
 
-      
-      
-      
-    };
-    recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
-    recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
-  } else if (voiceBtn) {
-    voiceBtn.style.display = "none";
-  }
+
+
 
   // Send
   $("#send-btn").onclick = sendMessage;
