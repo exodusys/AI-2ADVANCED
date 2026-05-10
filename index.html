@@ -3892,8 +3892,8 @@ function bindEvents() {
 
   // Close memory panel on outside click
   document.addEventListener('click', e => {
-    const panel = $("#memory-panel");
-    const toggle = $("#memory-toggle");
+    const panel1 = $("#memory-panel");
+    const toggle1 = $("#memory-toggle");
     if (panel1.classList.contains("active") && !panel1.contains(e.target) && e.target !== toggle) {
       panel1.classList.remove("active");
     }
