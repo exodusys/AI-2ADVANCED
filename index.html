@@ -3539,7 +3539,24 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
-      voiceBtn.classList.remove("recording");
+      
+      
+      const pause = (ms) => new Promise(res => setTimeout(res, ms));
+
+async function lireMessage() {
+    const message = new SpeechSynthesisUtterance("Bonjour, je lis ce message après une pause.");
+    message.lang = 'fr-FR'; // Définit la langue en français
+
+    console.log("Attente de 2 secondes...");
+    await pause(2000);
+
+    window.speechSynthesis.speak(message);
+}
+      
+      
+      
+      
+      
     };
     recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
     recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
