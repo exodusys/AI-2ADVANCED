@@ -3432,7 +3432,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savedModel = await db.get('settings', 'model');
     if (savedModel) { state.model = savedModel.value; modelSel.value = state.model; }
     else modelSel.value = state.model;
-    
+    fileBtn.style.display = "none";
   } catch(e) {}
   
   
