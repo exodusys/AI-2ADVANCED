@@ -3414,7 +3414,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   
-  
+  // Show/hide file upload btn based on model capability
+  const updateFileBtn = () => {
+    const m = MODELS.find(x => x.id === state.model);
+    const fileBtn = document.getElementById('file-upload-btn');
+    if (fileBtn) {
+      const canUpload = m?.vision || m?.audio;
+      fileBtn.style.opacity = canUpload ? '1' : '0.35';
+      fileBtn.title = canUpload ? `Joindre un fichier (${m.vision?'image':'audio'} supporté)` : 'Upload disponible avec Pixtral (images) ou Voxtral (audio)';
+    }
+  };
+  updateFileBtn();
+  document.getElementById('model-select').addEventListener('change', () => {
+    setTimeout(updateFileBtn, 50);
+  });
+  try {
+    const savedModel = await db.get('settings', 'model');
+    if (savedModel) { state.model = savedModel.value; modelSel.value = state.model; }
+    else modelSel.value = state.model;
+    
+  } catch(e) {}
   
   
 
