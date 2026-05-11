@@ -3519,8 +3519,7 @@ function bindEvents() {
 
   // Voice dictation
 
-do {
-// code block to be executed
+
   const voiceBtn = $("#voice-btn");
   if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3551,8 +3550,6 @@ do {
     };
     
     
-    }
-while (recognition.stop(););
 
     
     
