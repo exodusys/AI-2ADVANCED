@@ -717,6 +717,15 @@ body::before {
 #voice-btn.recording { border-color: var(--danger); color: var(--danger); animation: pulse-border 1s infinite; background: rgba(255,51,102,0.1); }
 @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(255,51,102,0.4)}50%{box-shadow:0 0 0 6px rgba(255,51,102,0)} }
 
+/* ═══ RECORD BUTTON ═══ */
+#file-upload-btn { background: var(--hull); border: var(--hud-border); color: var(--text-dim); font-size: 16px; width: 45px; height: 45px; border-radius: var(--r-lg); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; flex-shrink: 0; align-self: center; }
+#file-upload-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+
+
+
+
+
 /* ═══ SCROLL TO BOTTOM ═══ */
 #scroll-bottom { position: fixed; right: 20px; bottom: 120px; z-index: 200; width: 34px; height: 34px; border-radius: 50%; background: var(--hull); border: var(--hud-border); color: var(--cyan); font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: var(--transition); }
 #scroll-bottom.visible { display: flex; }
@@ -1221,6 +1230,9 @@ body::before {
   #input-area { padding: 8px 10px; gap: 7px; }
   #send-btn { padding: 10px 14px; font-size: 12px; }
   #voice-btn { width: 46px; height: 46px; font-size: 14px; }
+  #file-upload-btn { width: 46px; height: 46px; font-size: 14px; }
+  
+  
   #scroll-bottom { right: 20px; bottom:100px; }
   #archives-btn { right: 100px; top:10px; }
   #memory-toggle { right: 25px; top:10px; }
@@ -1683,11 +1695,13 @@ body::before {
 <!-- ═══════════════════ INPUT ═══════════════════ -->
 <div id="input-area" style="position:relative"> 
   <button id="voice-btn" title="Dictée vocale">🎤</button>
-  
-  <button id="file-upload-btn" title="Joindre un fichier/image/audio" style="background:var(--hull);border:var(--hud-border);color:var(--text-dim);font-size:16px;width:46px;height:46px;border-radius:var(--r-lg);cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center">📎</button>
-     <button id="file-upload-btn" title="Joindre un fichier/image/audio">📎</button>
+   
+    
+
   
     
+
+   
     
     
     
