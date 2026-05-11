@@ -404,7 +404,7 @@ body::before {
   padding: 12px 16px;
   border-radius: var(--r-lg);
   resize: none;
-  min-height: 35px;
+  min-height: 46px;
   max-height: 160px;
   line-height: 1.5;
   transition: var(--transition);
@@ -419,7 +419,7 @@ body::before {
   background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,255,157,0.1));
   border: var(--border-cyan);
   color: var(--cyan);
-  height: 35px;
+  height: 46px;
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
@@ -1218,12 +1218,9 @@ body::before {
     to { opacity: 1; transform: translateY(0); }
   }
   .data-grid { grid-template-columns: 1fr 1fr; }
-
-  
-  
-  #input-area {background: rgba(5,13,24,0.95);border-top: var(--hud-border);padding: 12px 16px;display: flex;gap: 10px;align-items: flex-start;flex-shrink: 0;backdrop-filter: blur(20px);box-shadow: 0 -1px 0 rgba(0,229,255,0.08);}
+  #input-area { padding: 8px 10px; gap: 7px; }
   #send-btn { padding: 10px 14px; font-size: 12px; }
-  #voice-btn { width: 35px; height: 35px; font-size: 14px; }
+  #voice-btn { width: 46px; height: 46px; font-size: 14px; }
   #scroll-bottom { right: 20px; bottom:100px; }
   #archives-btn { right: 100px; top:10px; }
   #memory-toggle { right: 25px; top:10px; }
@@ -1687,7 +1684,7 @@ body::before {
 <div id="input-area" style="position:relative"> 
   <button id="voice-btn" title="Dictée vocale">🎤</button>
   
-  <button id="file-upload-btn" title="Joindre un fichier/image/audio" style="background:var(--hull);border:var(--hud-border);color:var(--text-dim);font-size:16px;width:35px;height:35px;border-radius:var(--r-lg);cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center">📎</button>
+  <button id="file-upload-btn" title="Joindre un fichier/image/audio" style="background:var(--hull);border:var(--hud-border);color:var(--text-dim);font-size:16px;width:46px;height:46px;border-radius:var(--r-lg);cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center">📎</button>
      
   <input type="file" id="file-input" accept="image/*,audio/*,.pdf" style="display:none">
   <textarea id="user-input" placeholder=" " rows="1"></textarea>
