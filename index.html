@@ -3568,6 +3568,8 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
+      await sendMessage();
+      recognition.start();
     };
     
     
