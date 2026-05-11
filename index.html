@@ -3530,7 +3530,7 @@ function bindEvents() {
     voiceBtn.onclick = () => {
       if (isRecording) { recognition.stop(); return; }
       
-      Start_Position
+      
       recognition.start();
       isRecording = true;
       voiceBtn.classList.add("recording");
@@ -3543,7 +3543,7 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
-      start_position;
+      voiceBtn.classList.remove("recording");
       
      
       
