@@ -3519,7 +3519,7 @@ function bindEvents() {
 
   // Voice dictation
 
-
+Start_Position
   const voiceBtn = $("#voice-btn");
   if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3546,7 +3546,7 @@ function bindEvents() {
      
       
     };
-    
+    start_position;
     
     recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
     recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
