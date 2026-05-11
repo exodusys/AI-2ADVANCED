@@ -3519,7 +3519,8 @@ function bindEvents() {
 
   // Voice dictation
 
-
+do {
+// code block to be executed
   const voiceBtn = $("#voice-btn");
   if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3531,8 +3532,7 @@ function bindEvents() {
       if (isRecording) { recognition.stop(); return; }
     
     
-    do {
-// code block to be executed
+    
 
     
     
@@ -3548,15 +3548,15 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
-      
-      
-      
-      }
+    };
+    
+    
+    }
 while (recognition.stop(););
 
-
-
-    };
+    
+    
+    
     recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
     recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
   } else if (voiceBtn) {
