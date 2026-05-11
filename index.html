@@ -3529,8 +3529,13 @@ function bindEvents() {
     let isRecording = false;
     voiceBtn.onclick = () => {
       if (isRecording) { recognition.stop(); return; }
-      
-      
+    
+    
+    do {
+// code block to be executed
+
+    
+    
       recognition.start();
       isRecording = true;
       voiceBtn.classList.add("recording");
@@ -3543,13 +3548,15 @@ function bindEvents() {
       autoResizeTextarea();
       recognition.stop();
       sendMessage();
-      voiceBtn.classList.remove("recording");
       
-     
       
+      
+      }
+while (recognition.stop(););
+
+
+
     };
-    
-    
     recognition.onend = () => { isRecording = false; voiceBtn.classList.remove("recording"); voiceBtn.title = "Dictée vocale"; };
     recognition.onerror = () => { isRecording = false; voiceBtn.classList.remove("recording"); toast("Dictée vocale indisponible", "error"); };
   } else if (voiceBtn) {
