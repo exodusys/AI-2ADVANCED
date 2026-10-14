@@ -1123,6 +1123,50 @@
 })();
 </script>
 
+
+<script>
+// Enhanced tech lab mouse glow + improved bg
+document.addEventListener('mousemove', (e)=>{
+  const cards = document.querySelectorAll('.tech-lab-card');
+  cards.forEach(card=>{
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', x+'px');
+    card.style.setProperty('--mouse-y', y+'px');
+  });
+});
+// Ensure chat has animated bg by default
+(function(){
+  const bg = localStorage.getItem('mistral_bg_style');
+  if(!bg){
+    localStorage.setItem('mistral_bg_style','cybergrid');
+    document.body.classList.add('bg-ai-cybergrid');
+  }
+  // Add floating particles to aiBg for chat
+  const aiBg = document.getElementById('aiBg');
+  if(aiBg && !aiBg.querySelector('.floating-dots')){
+    const dots = document.createElement('div');
+    dots.className='floating-dots';
+    dots.style.cssText='position:absolute;inset:0;pointer-events:none;';
+    let html='';
+    for(let i=0;i<18;i++){
+      const left = Math.random()*100;
+      const top = Math.random()*100;
+      const size = 1+Math.random()*2;
+      const dur = 8+Math.random()*12;
+      const delay = Math.random()*5;
+      html+=`<div style="position:absolute;left:${left}%;top:${top}%;width:${size}px;height:${size}px;background:${['#00F0FF','#FF00A8','#7C3AED','#22FF88'][i%4]};border-radius:50%;box-shadow:0 0 6px currentColor;opacity:0.6;animation:floatDot ${dur}s ease-in-out infinite alternate ${delay}s;"></div>`;
+    }
+    dots.innerHTML=html;
+    const style=document.createElement('style');
+    style.textContent='@keyframes floatDot{0%{transform:translate(0,0);opacity:0.3}100%{transform:translate(12px,-18px);opacity:0.9}}';
+    document.head.appendChild(style);
+    aiBg.appendChild(dots);
+  }
+})();
+</script>
+
 </body>
 </html
 .tech-lab-info{margin-top:10px;}
@@ -1131,6 +1175,137 @@
 .tech-lab-badge{font-size:0.65rem;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
 
 
+/* --- Background selector overlay --- */
+.bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);display:flex;align-items:flex-start;justify-content:center;padding-top:96px;z-index:84;padding-left:16px;padding-right:16px}
+.bg-overlay[hidden]{display:none}
+.bg-panel{width:min(560px,calc(100vw - 32px));background:var(--surface-solid);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;animation:messageIn 0.35s cubic-bezier(0.16,1,0.3,1);max-height:min(80vh,720px)}
+.bg-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:0.9rem}
+.bg-close{background:var(--surface-2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.bg-list{display:flex;flex-direction:column;gap:8px;padding:12px;overflow-y:auto}
+.bg-footer{border-top:1px solid var(--border);padding:10px 14px;text-align:center}
+.bg-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;transition:all 0.2s;text-align:left;width:100%;font-family:inherit;color:var(--text)}
+.bg-item:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.bg-item.active{border-color:#3b82f6;background:linear-gradient(135deg,rgba(37,99,235,0.15),rgba(59,130,246,0.15))}
+.bg-preview{width:52px;height:32px;border-radius:8px;flex-shrink:0;position:relative;overflow:hidden;border:1px solid var(--border);background:var(--bg)}
+.bg-item-body{flex:1;min-width:0}
+.bg-item-title{font-weight:600;font-size:0.88rem}
+.bg-item-desc{font-size:0.72rem;color:var(--text-muted);margin-top:2px;line-height:1.3}
+
+
+/* --- Container for animated AI backgrounds - ENHANCED TECH CHAT --- */
+#aiBg{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;opacity:1;transition:opacity 0.5s;background:#05070a}
+#aiBg .ai-layer{position:absolute;inset:0}
+#aiBg::before{content:'';position:absolute;inset:0;background: 
+  radial-gradient(ellipse at 20% 30%, rgba(0,240,255,0.08) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 20%, rgba(255,0,168,0.06) 0%, transparent 50%),
+  radial-gradient(ellipse at 50% 80%, rgba(124,58,237,0.07) 0%, transparent 50%),
+  linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+  animation: baseGridMove 60s linear infinite;
+}
+#aiBg::after{content:'';position:absolute;inset:0;background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%);}
+
+@keyframes baseGridMove{0%{background-position:0 0,0 0,0 0,0 0,0 0}100%{background-position:0 0,0 0,0 0,0 40px,40px 0}}
+
+body.bg-ai-default #aiBg{opacity:0.6}
+body.bg-ai-default #aiBg::before{opacity:0.6}
+
+/* 1 - Neural Network - ENHANCED */
+body.bg-ai-neural #aiBg{background: #05070a}
+body.bg-ai-neural #aiBg::before{content:'';position:absolute;inset:-20%;background-image: 
+  radial-gradient(circle at 20% 30%, rgba(0,240,255,0.5) 0 3px, transparent 4px), 
+  radial-gradient(circle at 80% 20%, rgba(255,0,168,0.5) 0 3px, transparent 4px), 
+  radial-gradient(circle at 50% 80%, rgba(124,58,237,0.5) 0 3px, transparent 4px), 
+  radial-gradient(circle at 10% 90%, rgba(34,255,136,0.4) 0 3px, transparent 4px),
+  radial-gradient(circle at 90% 90%, rgba(59,130,246,0.4) 0 2px, transparent 3px);
+  animation: neuralMove 12s ease-in-out infinite alternate}
+body.bg-ai-neural #aiBg::after{content:'';position:absolute;inset:0;background: 
+  linear-gradient(90deg, transparent 49%, rgba(0,240,255,0.15) 50%, transparent 51%),
+  linear-gradient(30deg, transparent 49%, rgba(255,0,168,0.12) 50%, transparent 51%),
+  radial-gradient(circle at 50% 50%, rgba(0,240,255,0.05), transparent 70%);
+  animation: neuralPulse 4s ease-in-out infinite}
+@keyframes neuralMove{0%{transform:translate(0,0) scale(1)}100%{transform:translate(24px,-18px) scale(1.12)}}
+@keyframes neuralPulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* 2 - Matrix Rain - ENHANCED */
+body.bg-ai-matrix #aiBg{background:#02020a}
+body.bg-ai-matrix #aiBg::before{content:'01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101';position:absolute;inset:0;font-family:monospace;font-size:14px;line-height:14px;color:rgba(34,255,136,0.18);word-break:break-all;white-space:pre-wrap;animation: matrixRain 8s linear infinite;filter:blur(0.3px)}
+body.bg-ai-matrix #aiBg::after{content:'';position:absolute;inset:0;background: linear-gradient(transparent 0%, rgba(0,0,0,0.4) 80%, rgba(2,4,10,0.9) 100%), radial-gradient(ellipse at center, transparent, rgba(0,0,0,0.6))}
+@keyframes matrixRain{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+
+/* 3 - Circuit Board - ENHANCED */
+body.bg-ai-circuit #aiBg{background:#050a06}
+body.bg-ai-circuit #aiBg::before{content:'';position:absolute;inset:0;background-image: linear-gradient(rgba(34,255,136,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(34,255,136,0.12) 1px, transparent 1px);background-size:40px 40px;animation: circuitMove 20s linear infinite}
+body.bg-ai-circuit #aiBg::after{content:'';position:absolute;inset:0;background: radial-gradient(circle at 30% 50%, rgba(34,255,136,0.25), transparent 40%), radial-gradient(circle at 70% 30%, rgba(0,240,255,0.2), transparent 30%);animation: circuitGlow 3s ease-in-out infinite alternate}
+@keyframes circuitMove{0%{background-position:0 0}100%{background-position:40px 40px}}
+@keyframes circuitGlow{0%{opacity:0.6}100%{opacity:1}}
+
+/* NEW - Cyber Grid 3D Perspective - DEFAULT TECH */
+body.bg-ai-cybergrid #aiBg{background:#05070a}
+body.bg-ai-cybergrid #aiBg::before{content:'';position:absolute;inset:0;top:30%;background-image: 
+  linear-gradient(rgba(0,240,255,0.15) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(0,240,255,0.12) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(600px) rotateX(65deg);
+  transform-origin: top;
+  animation: cyberGridMove 12s linear infinite;
+}
+body.bg-ai-cybergrid #aiBg::after{content:'';position:absolute;inset:0;background: 
+  linear-gradient(to bottom, transparent 0%, rgba(5,7,10,0.8) 80%),
+  radial-gradient(ellipse at 50% 0%, rgba(0,240,255,0.15), transparent 60%);
+}
+@keyframes cyberGridMove{0%{background-position:0 0}100%{background-position:0 60px}}
+
+/* NEW - Particles Floating Network */
+body.bg-ai-particles #aiBg{background:#05070a}
+body.bg-ai-particles #aiBg::before{content:'';position:absolute;inset:0;background-image:
+  radial-gradient(circle at 10% 20%, rgba(0,240,255,0.3) 0 2px, transparent 3px),
+  radial-gradient(circle at 30% 60%, rgba(255,0,168,0.3) 0 2px, transparent 3px),
+  radial-gradient(circle at 50% 10%, rgba(124,58,237,0.3) 0 2px, transparent 3px),
+  radial-gradient(circle at 70% 40%, rgba(34,255,136,0.3) 0 2px, transparent 3px),
+  radial-gradient(circle at 90% 80%, rgba(59,130,246,0.3) 0 2px, transparent 3px),
+  radial-gradient(circle at 20% 80%, rgba(255,255,255,0.2) 0 1px, transparent 2px);
+  animation: particlesFloat 20s ease-in-out infinite alternate;
+}
+body.bg-ai-particles #aiBg::after{content:'';position:absolute;inset:0;background:
+  linear-gradient(90deg, transparent 0%, rgba(0,240,255,0.04) 50%, transparent 100%),
+  linear-gradient(0deg, transparent 0%, rgba(255,0,168,0.03) 50%, transparent 100%);
+  animation: particlesSweep 8s ease-in-out infinite;
+}
+@keyframes particlesFloat{0%{transform:translate(0,0)}100%{transform:translate(15px,-15px)}}
+@keyframes particlesSweep{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+/* Keep other bg styles but enhance opacity */
+body.bg-ai-quantum #aiBg{background:radial-gradient(ellipse at center, #0a0a1f 0%, #05070a 70%);}
+
+/* --- Chat message glass improvement for animated bg --- */
+.message.assistant .message-content{background:rgba(15,15,25,0.7) !important;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08)}
+.message.user .message-content{background:linear-gradient(135deg, rgba(59,130,246,0.25), rgba(124,58,237,0.25)) !important;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12)}
+#messages{background: transparent !important}
+.app-header, .composer{backdrop-filter:blur(20px);background:rgba(5,7,10,0.65) !important}
+.composer{border-top:1px solid rgba(255,255,255,0.08)}
+
+/* --- TECH LAB VISUAL UPGRADE --- */
+.tech-lab-overlay{background:radial-gradient(ellipse at 20% 0%, rgba(0,240,255,0.12), transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(255,0,168,0.10), transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(124,58,237,0.10), transparent 60%), rgba(2,4,10,0.96) !important}
+.tech-lab-header{background:rgba(5,7,10,0.8) !important;backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08) !important}
+.tech-lab-header span:first-child{background:linear-gradient(90deg, #00F0FF, #FF00A8, #7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.1rem !important}
+.tech-lab-grid{background: 
+  linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+.tech-lab-card{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)) !important;border:1px solid rgba(255,255,255,0.06) !important;backdrop-filter:blur(8px);box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06) !important;transition: all 0.35s cubic-bezier(0.16,1,0.3,1) !important}
+.tech-lab-card::before{content:'';position:absolute;inset:0;background:radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06), transparent 40%);opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.tech-lab-card:hover::before{opacity:1}
+.tech-lab-card:hover{transform:translateY(-4px) scale(1.02) !important;box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 30px var(--glow, #00F0FF)33, inset 0 1px 0 rgba(255,255,255,0.1) !important;border-color:var(--glow, #00F0FF)66 !important}
+.tech-lab-card.active{border-color:#00F0FF !important;box-shadow: 0 0 0 1px #00F0FF44, 0 8px 32px rgba(0,240,255,0.25), inset 0 1px 0 rgba(255,255,255,0.1) !important;background:linear-gradient(180deg, rgba(0,240,255,0.12), rgba(0,240,255,0.04)) !important}
+.tech-lab-preview{background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.6), transparent 70%), radial-gradient(circle at 50% 50%, var(--glow, #00F0FF)08, transparent 60%) !important;border:1px solid rgba(255,255,255,0.04);box-shadow: inset 0 0 20px rgba(0,0,0,0.5)}
+.tech-lab-title{font-family:monospace;letter-spacing:0.3px}
+.tech-lab-badge{background:rgba(0,0,0,0.4) !important;border:1px solid rgba(255,255,255,0.1) !important}
+.tech-filter-btn{transition:all 0.2s !important;backdrop-filter:blur(8px)}
+.tech-filter-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.tech-filter-btn.active{box-shadow:0 0 12px currentColor !important;transform:scale(1.05)}
 /* --- Background selector overlay --- */
 .bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);display:flex;align-items:flex-start;justify-content:center;padding-top:96px;z-index:84;padding-left:16px;padding-right:16px}
 .bg-overlay[hidden]{display:none}
@@ -4313,7 +4488,7 @@ const BG_STYLES=[
   {id:'consciousness', name:'Conscience Digitale', desc:'Formes organiques qui morphent', icon:'🌀', core:'#ec4899', cat:'IA'}
 ];
 
-function getBgStyle(){ return localStorage.getItem(BG_KEY) || 'default'; }
+function getBgStyle(){ return localStorage.getItem(BG_KEY) || 'cybergrid'; }
 
 function applyBgStyle(styleId){
   const body = document.body;
@@ -4537,6 +4712,50 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
   });
 
   setTimeout(()=>applyVortexStyle(getVortexStyle()), 200);
+})();
+</script>
+
+
+<script>
+// Enhanced tech lab mouse glow + improved bg
+document.addEventListener('mousemove', (e)=>{
+  const cards = document.querySelectorAll('.tech-lab-card');
+  cards.forEach(card=>{
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', x+'px');
+    card.style.setProperty('--mouse-y', y+'px');
+  });
+});
+// Ensure chat has animated bg by default
+(function(){
+  const bg = localStorage.getItem('mistral_bg_style');
+  if(!bg){
+    localStorage.setItem('mistral_bg_style','cybergrid');
+    document.body.classList.add('bg-ai-cybergrid');
+  }
+  // Add floating particles to aiBg for chat
+  const aiBg = document.getElementById('aiBg');
+  if(aiBg && !aiBg.querySelector('.floating-dots')){
+    const dots = document.createElement('div');
+    dots.className='floating-dots';
+    dots.style.cssText='position:absolute;inset:0;pointer-events:none;';
+    let html='';
+    for(let i=0;i<18;i++){
+      const left = Math.random()*100;
+      const top = Math.random()*100;
+      const size = 1+Math.random()*2;
+      const dur = 8+Math.random()*12;
+      const delay = Math.random()*5;
+      html+=`<div style="position:absolute;left:${left}%;top:${top}%;width:${size}px;height:${size}px;background:${['#00F0FF','#FF00A8','#7C3AED','#22FF88'][i%4]};border-radius:50%;box-shadow:0 0 6px currentColor;opacity:0.6;animation:floatDot ${dur}s ease-in-out infinite alternate ${delay}s;"></div>`;
+    }
+    dots.innerHTML=html;
+    const style=document.createElement('style');
+    style.textContent='@keyframes floatDot{0%{transform:translate(0,0);opacity:0.3}100%{transform:translate(12px,-18px);opacity:0.9}}';
+    document.head.appendChild(style);
+    aiBg.appendChild(dots);
+  }
 })();
 </script>
 
