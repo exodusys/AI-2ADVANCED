@@ -1569,9 +1569,9 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   }
 }
 
-/* === FIX GLOBAL: hauteur unifiée + fond remonté pour voir tous les boutons === */
-.vortex-overlay, .model-overlay, .agent-overlay, .history-overlay,
-.bg-overlay, .key-overlay, .burger-overlay, .modal-overlay{
+/* === FIX MOBILE: Agents IA & Discussions - 3 boutons visibles === */
+/* Base: même hauteur que vortex pour agents, discussions, modèles */
+.agent-overlay, .history-overlay, .model-overlay{
   position:fixed !important;
   inset:0 !important;
   background:rgba(0,0,0,0.58) !important;
@@ -1579,18 +1579,16 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   display:flex !important;
   align-items:flex-start !important;
   justify-content:center !important;
-  padding-top:12px !important;
-  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)) !important;
+  padding-top:20px !important;
+  padding-bottom:20px !important;
   padding-left:12px !important;
   padding-right:12px !important;
   overflow-y:auto !important;
   overscroll-behavior:contain !important;
 }
 
-.vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
-.bg-panel, .key-panel, .burger-panel, .modal{
+.agent-panel-centered, .history-panel, .model-panel{
   width:min(560px,calc(100vw - 24px)) !important;
-  max-width:calc(100vw - 24px) !important;
   background:var(--surface-solid) !important;
   border:1px solid var(--border) !important;
   border-radius:18px !important;
@@ -1598,12 +1596,12 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   display:flex !important;
   flex-direction:column !important;
   overflow:hidden !important;
-  max-height:min(82vh,700px) !important;
-  margin:0 auto 24px auto !important;
+  max-height:min(88vh,760px) !important;
+  margin:auto 0 !important;
   animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1) !important;
 }
 
-.vortex-list, .model-list, .agent-list, .history-list, .bg-list, .burger-list{
+.agent-list, .history-list, .model-list{
   display:flex !important;
   flex-direction:column !important;
   gap:8px !important;
@@ -1614,60 +1612,66 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   max-height:none !important;
   -webkit-overflow-scrolling:touch !important;
 }
-.key-body, .modal-body{
-  overflow-y:auto !important;
-  flex:1 1 auto !important;
-  max-height:none !important;
-  -webkit-overflow-scrolling:touch !important;
-}
 
-.vortex-header, .model-header, .agent-panel-header, .history-header,
-.bg-header, .key-header, .burger-header, .modal-header{
+.agent-panel-header, .history-header, .model-header,
+.agent-footer, .history-footer, .model-footer{
   flex-shrink:0 !important;
 }
 
-.vortex-footer, .model-footer, .agent-footer, .history-footer,
-.bg-footer, .key-footer, .modal-footer{
-  flex-shrink:0 !important;
-  border-top:1px solid var(--border) !important;
-  padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px)) !important;
+/* Footer spécifique: toujours visible avec fond solide */
+.agent-footer, .history-footer{
   background:var(--surface-solid) !important;
+  border-top:1px solid var(--border) !important;
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px)) !important;
 }
 
+/* MOBILE - adaptation critique pour voir les 3 boutons */
 @media (max-width: 768px){
-  .vortex-overlay, .model-overlay, .agent-overlay, .history-overlay,
-  .bg-overlay, .key-overlay, .burger-overlay, .modal-overlay{
+  .agent-overlay, .history-overlay, .model-overlay{
     padding-top:8px !important;
-    padding-bottom:calc(28px + env(safe-area-inset-bottom,0px)) !important;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)) !important;
     padding-left:8px !important;
     padding-right:8px !important;
   }
-  .vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
-  .bg-panel, .key-panel, .burger-panel, .modal{
+  .agent-panel-centered, .history-panel, .model-panel{
     width:calc(100vw - 16px) !important;
-    max-width:none !important;
-    max-height:calc(100dvh - 56px) !important;
-    max-height:calc(100vh - 56px) !important;
+    max-width:100% !important;
+    /* Remonte le fond: 40px de marge au lieu de 16px */
+    max-height:calc(100dvh - 40px) !important;
+    max-height:calc(100vh - 40px) !important;
     border-radius:14px !important;
-    margin:0 auto 20px auto !important;
+    margin:0 auto 16px auto !important;
   }
-  .vortex-list, .model-list, .agent-list, .history-list, .bg-list, .burger-list{
+  .agent-list, .history-list, .model-list{
     padding:8px !important;
-    padding-bottom:16px !important;
+    padding-bottom:12px !important;
+    gap:6px !important;
+    /* Laisse de la place au footer: pas de max-height fixe, flex gère */
+    max-height:none !important;
+    min-height:0 !important;
+  }
+  /* Footer compact sur mobile pour gagner de la place */
+  .agent-footer, .history-footer{
+    padding:10px 10px calc(14px + env(safe-area-inset-bottom,0px)) !important;
     gap:6px !important;
   }
-  .vortex-footer, .model-footer, .agent-footer, .history-footer,
-  .bg-footer, .key-footer, .modal-footer{
-    padding-bottom:calc(16px + env(safe-area-inset-bottom,0px)) !important;
+  .agent-footer .btn, .history-footer .btn{
+    padding:10px 8px !important;
+    font-size:0.82rem !important;
   }
 }
 
+/* Très petits écrans en hauteur */
 @media (max-height: 700px){
-  .vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
-  .bg-panel, .key-panel, .burger-panel, .modal{
-    max-height:calc(100dvh - 32px) !important;
-    max-height:calc(100vh - 32px) !important;
+  .agent-panel-centered, .history-panel, .model-panel{
+    max-height:calc(100dvh - 20px) !important;
   }
+}
+
+/* Empêche le body de scroller quand popup ouverte */
+body:has(.agent-overlay:not([hidden])), 
+body:has(.history-overlay:not([hidden])){
+  overflow:hidden !important;
 }
 
 </style>
