@@ -1661,7 +1661,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 
 
 <style>
-/* ===== FIX FOOTER MOBILE - Mes agents IA & Discussions sauvegardées ===== */
+/* ===== FIX 1: Footer Mes agents IA & Discussions sauvegardées toujours visibles mobile ===== */
 .agent-panel-centered,
 .history-panel{
   display:flex !important;
@@ -1684,8 +1684,6 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   background:var(--surface-solid) !important;
   z-index:5 !important;
 }
-
-/* Mobile - garantit que les 3 boutons du bas restent à l'écran */
 @media (max-width: 768px){
   .agent-overlay,
   .history-overlay{
@@ -1693,7 +1691,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     justify-content:flex-start !important;
     padding:8px !important;
     padding-bottom:calc(8px + env(safe-area-inset-bottom,0px)) !important;
-    overflow-y:hidden !important; /* on scroll seulement la liste */
+    overflow-y:hidden !important;
   }
   .agent-panel-centered,
   .history-panel{
@@ -1707,7 +1705,6 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     border-radius:18px !important;
     overflow:hidden !important;
   }
-  /* iOS fallback */
   @supports not (height:100dvh){
     .agent-panel-centered,
     .history-panel{
@@ -1728,7 +1725,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   .agent-footer,
   .history-footer{
     flex-shrink:0 !important;
-    position:relative !important; /* sticky inutile quand overlay hidden */
+    position:relative !important;
     bottom:auto !important;
     background:var(--surface-solid) !important;
     border-top:1px solid var(--border) !important;
@@ -1751,35 +1748,90 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   }
 }
 
-/* Très petits écrans - compacte encore un peu */
-@media (max-width: 380px){
-  .agent-panel-header,
-  .history-header{
-    padding:10px 12px !important;
-  }
-  .agent-footer,
-  .history-footer{
-    padding:10px !important;
-    padding-bottom:calc(10px + env(safe-area-inset-bottom,0px)) !important;
-    gap:6px !important;
-  }
-  .agent-footer .btn,
-  .history-footer .btn{
-    min-height:42px !important;
-    font-size:0.85rem !important;
-  }
+/* ===== FIX 2: Modale Créer un agent - boutons Annuler / Enregistrer comme avant ===== */
+.modal-overlay{
+  align-items:flex-start !important;
+  justify-content:center !important;
+}
+.modal{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  max-height:min(88vh, 640px) !important;
+}
+.modal-body{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+}
+.modal-footer{
+  display:flex !important;
+  flex-direction:row !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:10px !important;
+  padding:14px 20px !important;
+  padding-bottom:14px !important;
+  border-top:1px solid var(--border) !important;
+  flex-shrink:0 !important;
+  background:var(--surface-solid) !important;
+  position:sticky !important;
+  bottom:0 !important;
+  z-index:2 !important;
+}
+.modal-footer .btn{
+  flex:0 0 auto !important;
+  min-height:42px !important;
+  min-width:96px !important;
+}
+#agentCancel{
+  background:var(--surface-2) !important;
+  border:1px solid var(--border) !important;
+}
+#agentSave{
+  background:var(--agent-bg, var(--accent)) !important;
+  color:white !important;
+  font-weight:600 !important;
 }
 
-/* Hauteur faible (clavier ouvert) - assure footer visible */
-@media (max-height: 600px){
-  .agent-panel-centered,
-  .history-panel{
-    max-height:calc(100dvh - 8px) !important;
-    height:calc(100dvh - 8px) !important;
+@media (max-width: 768px){
+  .modal-overlay{
+    align-items:stretch !important;
+    padding:8px !important;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom,0px)) !important;
+    overflow-y:hidden !important;
   }
-  .agent-list,
-  .history-list{
-    padding-bottom:8px !important;
+  .modal{
+    width:100% !important;
+    max-width:100% !important;
+    max-height:calc(100dvh - 16px) !important;
+    height:auto !important;
+    max-height:calc(100dvh - 16px - env(safe-area-inset-bottom,0px)) !important;
+    margin:0 !important;
+    border-radius:18px !important;
+  }
+  @supports not (height:100dvh){
+    .modal{
+      max-height:calc(100vh - 16px - env(safe-area-inset-bottom,0px)) !important;
+    }
+  }
+  /* Comme avant: 2 boutons côte à côte, même taille, alignés à droite -> deviennent 50/50 sur mobile */
+  .modal-footer{
+    flex-direction:row !important;
+    justify-content:stretch !important;
+    gap:8px !important;
+    padding:12px !important;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important;
+    background:var(--surface-solid) !important;
+    box-shadow:0 -8px 20px rgba(0,0,0,0.10) !important;
+  }
+  .modal-footer .btn{
+    flex:1 1 0 !important;
+    min-width:0 !important;
+    min-height:44px !important;
+    font-size:0.9rem !important;
+    font-weight:600 !important;
   }
 }
 </style>
