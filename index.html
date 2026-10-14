@@ -1568,6 +1568,69 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     max-height: calc(100vh - 16px) !important;
   }
 }
+
+/* === FIX: modèles Mistral même hauteur que vortex === */
+.model-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.58);backdrop-filter:blur(14px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:20px; padding-bottom:20px;
+  padding-left:12px; padding-right:12px;
+  z-index:82; overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.model-panel{
+  width:min(560px,calc(100vw - 24px));
+  background:var(--surface-solid);border:1px solid var(--border);border-radius:18px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;
+  overflow:hidden;animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1);
+  max-height:min(88vh,760px);
+  margin:auto 0;
+}
+.model-list{
+  display:flex;flex-direction:column;gap:8px;
+  padding:12px; padding-bottom:24px;
+  overflow-y:auto; flex:1;
+  -webkit-overflow-scrolling:touch;
+}
+.model-header, .model-footer{
+  flex-shrink:0;
+}
+
+@media (max-width: 768px){
+  .model-overlay{
+    padding-top:8px !important; 
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-left:8px !important; padding-right:8px !important;
+    align-items:flex-start !important;
+  }
+  .model-panel{
+    width:calc(100vw - 16px) !important; 
+    max-width:100%;
+    max-height: calc(100dvh - 16px) !important;
+    max-height: calc(100vh - 16px) !important;
+    border-radius:14px !important; 
+    margin:0 auto !important;
+    display:flex;
+    flex-direction:column;
+  }
+  .model-header{padding:10px 12px !important; font-size:0.85rem; flex-shrink:0;}
+  .model-footer{padding:8px 12px !important; flex-shrink:0;}
+  .model-list{
+    padding:8px !important; 
+    padding-bottom: 80px !important;
+    gap:6px !important;
+    overflow-y:auto !important;
+    flex:1 1 auto !important;
+    max-height: calc(100dvh - 120px) !important;
+    max-height: calc(100vh - 120px) !important;
+  }
+}
+@media (max-height: 700px){
+  .model-panel{max-height:94vh !important;}
+  .model-list{max-height: calc(100dvh - 100px) !important; padding-bottom: 64px !important;}
+}
+
 </style>
 
 </head>
