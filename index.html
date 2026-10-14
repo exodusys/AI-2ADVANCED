@@ -1812,6 +1812,67 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 .modal-footer .btn{flex:1 !important;width:50% !important;min-width:0 !important;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important}
 #agentCancel{justify-content:center !important;text-align:center !important}
 </style>
+<style>
+/* === FIX HAUTEUR MOBILE - Modèles Mistral entièrement visible sur téléphone === */
+@media (max-width: 600px){
+  .model-overlay{
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 12px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom,0px)) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .model-panel{
+    width: calc(100vw - 16px) !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    max-height: calc(100svh - 24px) !important;
+    max-height: calc(100vh - 24px) !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  .model-header{
+    padding: 12px 14px !important;
+    flex-shrink: 0 !important;
+  }
+  .model-list{
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding-bottom: 12px !important;
+  }
+  .model-footer{
+    flex-shrink: 0 !important;
+    position: relative !important;
+    padding: 8px 14px calc(8px + env(safe-area-inset-bottom,0px)) !important;
+    transform: translateY(-2px) !important;
+    margin-bottom: 0 !important;
+    border-top: 1px solid var(--border) !important;
+  }
+}
+@media (max-width: 380px){
+  .model-panel{
+    width: calc(100vw - 12px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 14px !important;
+  }
+}
+@media (max-height: 700px){
+  .model-panel{
+    max-height: calc(100dvh - 16px) !important;
+  }
+  .model-list{
+    max-height: none !important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
