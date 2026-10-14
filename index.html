@@ -1807,7 +1807,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 
 <style>
 /* FIX Modèles Mistral footer = Vortex Espace footer + Créer agent boutons même largeur */
-.model-footer{border-top:1px solid var(--border);padding:10px 14px !important;text-align:center !important}
+.model-footer{border-top:1px solid var(--border);padding:8px 14px 6px !important;text-align:center !important;transform:translateY(-4px);margin-bottom:-2px}
 .modal-footer{display:flex !important;gap:10px !important;justify-content:stretch !important}
 .modal-footer .btn{flex:1 !important;width:50% !important;min-width:0 !important;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important}
 #agentCancel{justify-content:center !important;text-align:center !important}
@@ -1917,7 +1917,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
       </div>
     </div>
     <div class="model-list" id="modelList"><p class="model-empty">Entre ta clé API pour charger les modèles…</p></div>
-    <div class="model-footer"><span id="modelCurrent" style="font-size:0.75rem;color:var(--text-muted)">Modèle actuel: -</span></div>
+    <div class="model-footer" style="transform:translateY(-4px)"><span id="modelCurrent" style="font-size:0.75rem;color:var(--text-muted)">Modèle actuel: -</span></div>
   </div>
 </div>
 
