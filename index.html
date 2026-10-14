@@ -2168,6 +2168,17 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   .user-menu{top:68px;right:8px;width:calc(100vw - 16px)}
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// Config EmailJS - remplace par tes clés
+window.EMAILJS_CONFIG = {
+  publicKey: 'TON_PUBLIC_KEY_EMAILJS',
+  serviceId: 'TON_SERVICE_ID',
+  templateId: 'TON_TEMPLATE_ID'
+};
+</script>
+
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
@@ -3907,7 +3918,14 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
       <button class="auth-btn primary" id="authSubmitBtn">Se connecter</button>
       <button class="auth-btn secondary" id="authGuestBtn" style="display:none">Continuer sans compte (démo)</button>
     </div>
-    <div class="auth-footer">
+    
+<div id="emailConfigBanner" style="margin:12px 20px 0;padding:10px 12px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);font-size:0.75rem;line-height:1.4;display:block">
+  <strong>⚙️ Config e-mail requise:</strong> Ouvre ce fichier et remplace <code>TON_PUBLIC_KEY_EMAILJS</code> etc. dans <code>EMAIL_CONFIG</code>.<br/>
+  <span style="opacity:0.8">Voir <code>backend_email/README.md</code> pour le backend Nodemailer.</span>
+  <button onclick="this.parentElement.style.display='none'" style="float:right;background:transparent;border:1px solid var(--border);border-radius:6px;padding:2px 6px;cursor:pointer">✕</button>
+</div>
+
+<div class="auth-footer">
       🔒 Tes données restent dans ton navigateur.<br/>
       En prod, remplace par un vrai backend e-mail.<br/>
       <span id="authFooterInfo"></span>
@@ -4053,14 +4071,101 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
     return map[email?.toLowerCase()] || null;
   }
   
-  // Simulated email send - in prod replace with fetch to backend / EmailJS / SMTP
+  // ===== CONFIGURATION E-MAIL RÉEL =====
+  const EMAIL_CONFIG = {
+    // Choisis ton mode: 'emailjs' ou 'backend' ou 'both'
+    mode: 'both', // 'emailjs' = uniquement EmailJS, 'backend' = API perso, 'both' = essaie backend puis EmailJS
+    emailjs: {
+      enabled: true,
+      publicKey: 'TON_PUBLIC_KEY_EMAILJS', // ex: 'abc123XYZ'
+      serviceId: 'TON_SERVICE_ID', // ex: 'service_mistral'
+      templateId: 'TON_TEMPLATE_ID' // ex: 'template_code'
+    },
+    backend: {
+      enabled: true,
+      endpoint: '/api/send-code' // ou 'https://ton-api.com/api/send-code'
+    }
+  };
+  
+  // Initialise EmailJS si dispo
+  try{
+    if(typeof emailjs !== 'undefined' && EMAIL_CONFIG.emailjs.publicKey !== 'TON_PUBLIC_KEY_EMAILJS'){
+      emailjs.init(EMAIL_CONFIG.emailjs.publicKey);
+    }
+  }catch(e){ console.warn('EmailJS init failed', e); }
+
+  // Envoi réel
   async function sendEmailCode(email, code, purpose){
-    console.log(`[EMAIL SIMULATION] Code ${purpose}: ${code} -> ${email}`);
-    // Example prod integration:
-    // await fetch('/api/send-code', {method:'POST', body: JSON.stringify({email, code, purpose})})
-    // or EmailJS: emailjs.send(...)
-    // For now, we store and display in UI
-    return true;
+    console.log(`[EMAIL] Envoi code ${purpose}: ${code} -> ${email}`);
+    let sent = false;
+    let lastError = null;
+
+    // 1) Essaie backend perso (Nodemailer / Resend / etc)
+    if((EMAIL_CONFIG.mode==='backend' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.backend.enabled){
+      try{
+        const res = await fetch(EMAIL_CONFIG.backend.endpoint, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, code, purpose, timestamp: Date.now()})
+        });
+        if(res.ok){
+          const data = await res.json().catch(()=>({}));
+          console.log('[EMAIL] Backend OK', data);
+          sent = true;
+          return true;
+        }else{
+          const txt = await res.text();
+          throw new Error(`Backend ${res.status}: ${txt}`);
+        }
+      }catch(e){
+        console.warn('[EMAIL] Backend failed, fallback EmailJS', e);
+        lastError = e;
+        if(EMAIL_CONFIG.mode==='backend') throw e;
+      }
+    }
+
+    // 2) Fallback / principal EmailJS (sans backend)
+    if((EMAIL_CONFIG.mode==='emailjs' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.emailjs.enabled){
+      try{
+        if(EMAIL_CONFIG.emailjs.publicKey === 'TON_PUBLIC_KEY_EMAILJS'){
+          console.warn('[EMAIL] EmailJS non configuré, mode démo');
+          // mode démo - on affiche quand même le code
+          return true;
+        }
+        if(typeof emailjs === 'undefined'){
+          throw new Error('EmailJS SDK non chargé');
+        }
+        const templateParams = {
+          to_email: email,
+          to_name: email.split('@')[0],
+          code: code,
+          purpose: purpose==='api_access' ? 'Accès clé API' : 'Vérification de compte',
+          purpose_detail: purpose,
+          expiry_minutes: 10
+        };
+        const result = await emailjs.send(
+          EMAIL_CONFIG.emailjs.serviceId,
+          EMAIL_CONFIG.emailjs.templateId,
+          templateParams
+        );
+        console.log('[EMAIL] EmailJS OK', result.status);
+        sent = true;
+        return true;
+      }catch(e){
+        console.error('[EMAIL] EmailJS failed', e);
+        lastError = e;
+      }
+    }
+
+    if(!sent){
+      // En dev, on ne bloque pas - on laisse passer en mode démo pour ne pas bloquer l'utilisateur
+      if(location.hostname==='localhost' || location.hostname==='127.0.0.1' || EMAIL_CONFIG.emailjs.publicKey==='TON_PUBLIC_KEY_EMAILJS'){
+        console.warn('[EMAIL] Mode démo activé - code affiché dans UI');
+        return true;
+      }
+      throw lastError || new Error('Envoi e-mail échoué');
+    }
+    return sent;
   }
   
   // UI Elements
