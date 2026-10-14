@@ -1569,71 +1569,105 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   }
 }
 
-/* === FIX: toutes les pages modales même hauteur que vortex (modèles, agents, discussions) === */
-.model-overlay, .agent-overlay, .history-overlay{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,0.58);backdrop-filter:blur(14px);
-  display:flex;align-items:flex-start;justify-content:center;
-  padding-top:20px; padding-bottom:20px;
-  padding-left:12px; padding-right:12px;
-  overflow-y:auto;
-  overscroll-behavior:contain;
+/* === FIX GLOBAL: hauteur unifiée + fond remonté pour voir tous les boutons === */
+.vortex-overlay, .model-overlay, .agent-overlay, .history-overlay,
+.bg-overlay, .key-overlay, .burger-overlay, .modal-overlay{
+  position:fixed !important;
+  inset:0 !important;
+  background:rgba(0,0,0,0.58) !important;
+  backdrop-filter:blur(14px) !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  padding-top:12px !important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)) !important;
+  padding-left:12px !important;
+  padding-right:12px !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
 }
-.model-overlay{z-index:82}
-.agent-overlay{z-index:80}
-.history-overlay{z-index:81}
 
-.model-panel, .agent-panel-centered, .history-panel{
+.vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
+.bg-panel, .key-panel, .burger-panel, .modal{
   width:min(560px,calc(100vw - 24px)) !important;
-  background:var(--surface-solid);border:1px solid var(--border);border-radius:18px !important;
-  box-shadow:var(--shadow);display:flex;flex-direction:column;
-  overflow:hidden;animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1);
-  max-height:min(88vh,760px) !important;
-  margin:auto 0 !important;
+  max-width:calc(100vw - 24px) !important;
+  background:var(--surface-solid) !important;
+  border:1px solid var(--border) !important;
+  border-radius:18px !important;
+  box-shadow:var(--shadow) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  max-height:min(82vh,700px) !important;
+  margin:0 auto 24px auto !important;
+  animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1) !important;
 }
 
-.model-list, .agent-list, .history-list{
-  display:flex;flex-direction:column;gap:8px;
-  padding:12px; padding-bottom:24px;
-  overflow-y:auto; flex:1;
-  -webkit-overflow-scrolling:touch;
+.vortex-list, .model-list, .agent-list, .history-list, .bg-list, .burger-list{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  padding:12px !important;
+  padding-bottom:16px !important;
+  overflow-y:auto !important;
+  flex:1 1 auto !important;
+  max-height:none !important;
+  -webkit-overflow-scrolling:touch !important;
 }
-.model-header, .model-footer,
-.agent-panel-header, .agent-footer,
-.history-header, .history-footer{
-  flex-shrink:0;
+.key-body, .modal-body{
+  overflow-y:auto !important;
+  flex:1 1 auto !important;
+  max-height:none !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
+.vortex-header, .model-header, .agent-panel-header, .history-header,
+.bg-header, .key-header, .burger-header, .modal-header{
+  flex-shrink:0 !important;
+}
+
+.vortex-footer, .model-footer, .agent-footer, .history-footer,
+.bg-footer, .key-footer, .modal-footer{
+  flex-shrink:0 !important;
+  border-top:1px solid var(--border) !important;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px)) !important;
+  background:var(--surface-solid) !important;
 }
 
 @media (max-width: 768px){
-  .model-overlay, .agent-overlay, .history-overlay{
-    padding-top:8px !important; 
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-    padding-left:8px !important; padding-right:8px !important;
-    align-items:flex-start !important;
+  .vortex-overlay, .model-overlay, .agent-overlay, .history-overlay,
+  .bg-overlay, .key-overlay, .burger-overlay, .modal-overlay{
+    padding-top:8px !important;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom,0px)) !important;
+    padding-left:8px !important;
+    padding-right:8px !important;
   }
-  .model-panel, .agent-panel-centered, .history-panel{
-    width:calc(100vw - 16px) !important; 
-    max-width:100%;
-    max-height: calc(100dvh - 16px) !important;
-    max-height: calc(100vh - 16px) !important;
-    border-radius:14px !important; 
-    margin:0 auto !important;
+  .vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
+  .bg-panel, .key-panel, .burger-panel, .modal{
+    width:calc(100vw - 16px) !important;
+    max-width:none !important;
+    max-height:calc(100dvh - 56px) !important;
+    max-height:calc(100vh - 56px) !important;
+    border-radius:14px !important;
+    margin:0 auto 20px auto !important;
   }
-  .model-header, .agent-panel-header, .history-header{padding:10px 12px !important; font-size:0.85rem; flex-shrink:0;}
-  .model-footer, .agent-footer, .history-footer{padding:8px 12px !important; flex-shrink:0;}
-  .model-list, .agent-list, .history-list{
-    padding:8px !important; 
-    padding-bottom: 80px !important;
+  .vortex-list, .model-list, .agent-list, .history-list, .bg-list, .burger-list{
+    padding:8px !important;
+    padding-bottom:16px !important;
     gap:6px !important;
-    overflow-y:auto !important;
-    flex:1 1 auto !important;
-    max-height: calc(100dvh - 120px) !important;
-    max-height: calc(100vh - 120px) !important;
+  }
+  .vortex-footer, .model-footer, .agent-footer, .history-footer,
+  .bg-footer, .key-footer, .modal-footer{
+    padding-bottom:calc(16px + env(safe-area-inset-bottom,0px)) !important;
   }
 }
+
 @media (max-height: 700px){
-  .model-panel, .agent-panel-centered, .history-panel{max-height:94vh !important;}
-  .model-list, .agent-list, .history-list{max-height: calc(100dvh - 100px) !important; padding-bottom: 64px !important;}
+  .vortex-panel, .model-panel, .agent-panel-centered, .history-panel,
+  .bg-panel, .key-panel, .burger-panel, .modal{
+    max-height:calc(100dvh - 32px) !important;
+    max-height:calc(100vh - 32px) !important;
+  }
 }
 
 </style>
