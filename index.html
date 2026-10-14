@@ -1489,6 +1489,66 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 }
 </style>
 
+
+<style>
+/* === POPUPS REMONTÉS PLUS HAUT - v4.7 === */
+.burger-overlay,
+.vortex-overlay,
+.bg-overlay,
+.key-overlay,
+.model-overlay,
+.history-overlay,
+.agent-overlay,
+.modal-overlay {
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+  overflow-y: auto !important;
+}
+
+/* Panels collés en haut */
+.burger-overlay .burger-panel,
+.vortex-overlay .vortex-panel,
+.bg-overlay .bg-panel,
+.key-overlay .key-panel,
+.model-overlay .model-panel,
+.history-overlay .history-panel,
+.agent-overlay .agent-panel-centered,
+.modal-overlay .modal {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  animation: messageIn 0.22s cubic-bezier(0.16,1,0.3,1) !important;
+}
+
+/* Mobile encore plus haut */
+@media (max-width: 768px){
+  .burger-overlay,
+  .vortex-overlay,
+  .bg-overlay,
+  .key-overlay,
+  .model-overlay,
+  .history-overlay,
+  .agent-overlay,
+  .modal-overlay {
+    padding-top: 8px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .vortex-panel,
+  .bg-panel,
+  .key-panel,
+  .model-panel,
+  .history-panel,
+  .agent-panel-centered,
+  .modal {
+    max-height: calc(100dvh - 16px) !important;
+    max-height: calc(100vh - 16px) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
