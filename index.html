@@ -1489,6 +1489,31 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 }
 </style>
 
+
+<style>
+/* === LIENS CLIQUABLES === */
+.bubble a{color:var(--accent,#ff6b35);text-decoration:underline;text-underline-offset:2px;word-break:break-all;cursor:pointer;font-weight:500}
+.bubble a:hover{opacity:0.85;text-decoration-thickness:2px}
+.bubble code{background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:0.85em}
+.bubble pre{ background:var(--surface-2); padding:12px; border-radius:10px; overflow:auto; margin:8px 0 }
+.bubble pre code{ background:none; padding:0 }
+
+/* === EDITEUR MEDIA === */
+.media-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
+.media-overlay[hidden]{display:none!important}
+.media-panel{width:min(900px,95vw);max-height:92vh;background:var(--surface-solid,#1e1e1e);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.media-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600}
+.media-body{padding:12px;overflow:auto;display:flex;flex-direction:column;gap:12px;align-items:center;flex:1}
+.media-footer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border);flex-wrap:wrap;justify-content:flex-end}
+.edit-canvas{max-width:100%;max-height:60vh;border-radius:12px;background:#000}
+.edit-controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%}
+.edit-controls button,.edit-controls input[type="range"]{padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer}
+.file-preview{position:relative}
+.file-preview-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.file-preview-actions button{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:0.8rem}
+.video-preview{max-width:100%;max-height:260px;border-radius:10px}
+.doc-editor{width:100%;min-height:200px;max-height:50vh;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:monospace;font-size:0.85rem;resize:vertical}
+</style>
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
@@ -1695,6 +1720,76 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <p class="hint" id="statusHint" style="display:none">Prêt</p>
   </div>
 </main>
+<!-- Overlay preview image/video full -->
+<div class="media-overlay" id="mediaPreviewOverlay" hidden>
+  <div class="media-panel">
+    <div class="media-header"><span id="mediaPreviewTitle">Aperçu</span><button type="button" id="mediaPreviewClose" class="bg-close">✕</button></div>
+    <div class="media-body" id="mediaPreviewBody"></div>
+  </div>
+</div>
+
+<!-- Overlay editeur image -->
+<div class="media-overlay" id="imageEditorOverlay" hidden>
+  <div class="media-panel">
+    <div class="media-header"><span>✏️ Éditeur photo</span><button type="button" id="imageEditorClose" class="bg-close">✕</button></div>
+    <div class="media-body">
+      <canvas id="editCanvas" class="edit-canvas"></canvas>
+      <div class="edit-controls">
+        <button type="button" id="rotateLeftBtn">↺ -90°</button>
+        <button type="button" id="rotateRightBtn">↻ +90°</button>
+        <button type="button" id="flipHBtn">↔ Miroir H</button>
+        <button type="button" id="flipVBtn">↕ Miroir V</button>
+        <button type="button" id="grayscaleBtn">⚫ N&B</button>
+        <button type="button" id="resetFilterBtn">🔄 Reset</button>
+      </div>
+      <div class="edit-controls" style="width:100%">
+        <label style="display:flex;align-items:center;gap:8px;width:100%">☀️ Luminosité <input type="range" id="brightnessRange" min="0" max="200" value="100" style="flex:1"></label>
+        <label style="display:flex;align-items:center;gap:8px;width:100%">◐ Contraste <input type="range" id="contrastRange" min="0" max="200" value="100" style="flex:1"></label>
+      </div>
+    </div>
+    <div class="media-footer">
+      <button type="button" class="btn secondary" id="imageEditorCancel">Annuler</button>
+      <button type="button" class="btn" id="imageEditorSave">✅ Appliquer & utiliser</button>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay editeur video -->
+<div class="media-overlay" id="videoEditorOverlay" hidden>
+  <div class="media-panel">
+    <div class="media-header"><span>🎬 Éditeur vidéo</span><button type="button" id="videoEditorClose" class="bg-close">✕</button></div>
+    <div class="media-body">
+      <video id="editVideo" class="video-preview" controls playsinline></video>
+      <div class="edit-controls" style="width:100%;flex-direction:column">
+        <label>Début (s): <input type="number" id="videoStart" value="0" min="0" step="0.1" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border)"></label>
+        <label>Fin (s): <input type="number" id="videoEnd" value="0" min="0" step="0.1" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border)"></label>
+        <div style="font-size:0.75rem;color:var(--text-muted)">L'édition coupe virtuellement l'affichage. Le fichier original est conservé, tu peux extraire une vignette.</div>
+      </div>
+    </div>
+    <div class="media-footer">
+      <button type="button" class="btn secondary" id="captureThumbBtn">📸 Extraire vignette</button>
+      <button type="button" class="btn secondary" id="videoEditorCancel">Annuler</button>
+      <button type="button" class="btn" id="videoEditorSave">✅ Utiliser vidéo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay editeur document -->
+<div class="media-overlay" id="docEditorOverlay" hidden>
+  <div class="media-panel">
+    <div class="media-header"><span>📝 Éditeur document</span><button type="button" id="docEditorClose" class="bg-close">✕</button></div>
+    <div class="media-body">
+      <div id="docFileName" style="font-weight:600;width:100%"></div>
+      <textarea id="docEditorArea" class="doc-editor" placeholder="Contenu du fichier..."></textarea>
+      <div style="font-size:0.75rem;color:var(--text-muted);width:100%">Tu peux modifier le contenu avant de l'envoyer à l'IA. Pour PDF/DOCX/XLSX, le texte extrait est éditable et sera envoyé comme contexte.</div>
+    </div>
+    <div class="media-footer">
+      <button type="button" class="btn secondary" id="docEditorCancel">Annuler</button>
+      <button type="button" class="btn" id="docEditorSave">✅ Appliquer</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 const messagesEl=document.getElementById('messages');
@@ -2718,6 +2813,42 @@ function saveConversation(){
   }
 }
 
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function renderContent(text){
+  if(!text) return '';
+  let html = escapeHtml(text);
+  // Code blocks ```xxx```
+  const codeBlocks=[];
+  html = html.replace(/```([\s\S]*?)```/g, (m,c)=>{
+    const i = codeBlocks.length;
+    codeBlocks.push('<pre><code>'+escapeHtml(c.trim())+'</code></pre>');
+    return '___CODEBLOCK_'+i+'___';
+  });
+  // Markdown links [label](https://...)
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (m,label,url)=>{
+    const safeLabel = label; // already escaped? label was escaped, but keep
+    const safeUrl = url.replace(/"/g,'&quot;');
+    return '<a href="'+safeUrl+'" target="_blank" rel="noopener noreferrer">'+safeLabel+'</a>';
+  });
+  // Raw URLs - avoid inside already created <a>
+  html = html.replace(/(?<!href="|">)(https?:\/\/[^\s<]+[^\s<.,;!?\)])/g, (url)=>{
+    const safeUrl = url.replace(/"/g,'&quot;');
+    return '<a href="'+safeUrl+'" target="_blank" rel="noopener noreferrer">'+safeUrl+'</a>';
+  });
+  // Bold **text**
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Italic *text* (avoid messing bold)
+  html = html.replace(/(?<!\*)\*([^\*\n]+?)\*(?!\*)/g, '<em>$1</em>');
+  // Inline code `code`
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  // Restore code blocks
+  html = html.replace(/___CODEBLOCK_(\d+)___/g, (m,i)=>codeBlocks[parseInt(i)]||'');
+  // Line breaks
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
 function addMessage(role,content,isError=false, imageUrl=null){
   welcome.style.display='none';
   const div=document.createElement('div');div.className=`message ${role}`+(isError?' error':'');
@@ -2725,10 +2856,13 @@ function addMessage(role,content,isError=false, imageUrl=null){
   const bubble=document.createElement('div');bubble.className='bubble';
   if(imageUrl){
     const img=document.createElement('img'); img.src=imageUrl; img.style.maxWidth='100%'; img.style.borderRadius='10px'; img.style.marginBottom='8px'; img.style.display='block';
+    // rendre image cliquable en plein ecran
+    img.style.cursor='zoom-in';
+    img.addEventListener('click',()=>openMediaPreview(imageUrl));
     bubble.appendChild(img);
-    const txt=document.createElement('div'); txt.textContent=content; bubble.appendChild(txt);
+    const txt=document.createElement('div'); txt.innerHTML=renderContent(content); bubble.appendChild(txt);
   } else {
-    bubble.textContent=content;
+    bubble.innerHTML=renderContent(content);
   }
   const copyBtn=document.createElement('button');copyBtn.className='copy-btn';copyBtn.type='button';copyBtn.textContent='⧉ Copier';
   copyBtn.addEventListener('click',async()=>{
@@ -2893,35 +3027,10 @@ if(!SpeechRecognition){
 
 
 async function sendMessage(){
-  const rawText=userInput.value.trim();
-  let __locContext = "";
-  let __locData = null;
-  try {
-    if (typeof window.needsLocation === 'function' && window.needsLocation(rawText)) {
-      const hint=document.getElementById('statusHint');
-      if(hint){ hint.textContent='📍 Localisation en cours (PC/Mobile)...'; hint.style.display='block'; }
-      __locData = window.UserLocation || (window.__locateUser ? await window.__locateUser() : null);
-      if(__locData){
-        window.UserLocation = __locData;
-        __locContext = `[CONTEXTE LOCALISATION AUTO - OBLIGATOIRE POUR REPONDRE]
-Appareil: ${__locData.device.device} / ${__locData.device.os} / ${__locData.device.browser} (tactile:${__locData.device.touch?'oui':'non'} / écran:${__locData.device.screen})
-Méthode: ${__locData.method} - Source: ${__locData.source} - Précision: ${__locData.precision} (${__locData.accuracy||'?'}m)
-Coordonnées: ${__locData.lat}, ${__locData.lon}
-Ville: ${__locData.city||'?'} - CP: ${__locData.postcode||'?'} - Région: ${__locData.region||'?'} - Pays: ${__locData.country||'?'} (${__locData.country_code||''})
-Adresse complète: ${__locData.full||''}
-IP: ${__locData.ip||'masquée'}
-Timestamp: ${__locData.timestamp}
-Consigne: Utilise ces informations pour répondre précisément à la demande de localisation de l'utilisateur. Ne redemande pas sa position.
-[/CONTEXTE]
-`;
-        if(hint){ hint.textContent=`📍 ${__locData.city||''} ${__locData.country||''} • ${__locData.method.toUpperCase()} • ${Math.round(__locData.accuracy||0)}m`; setTimeout(()=>{hint.style.display='none';},4000); }
-      }
-    }
-  } catch(e){ console.warn('Erreur localisation auto', e); }
-  const apiKey=getApiKey();
+  const rawText=userInput.value.trim(); const apiKey=getApiKey();
   if((!rawText && !attachedFile) || !apiKey){ if(!apiKey){ openKeyPanel(); return; } if(!rawText && !attachedFile) return; }
   if(isGenerating) return;
-  let text=__locContext + rawText; let displayText=rawText; let imgUrl=null;
+  let text=rawText; let displayText=rawText; let imgUrl=null;
   if(attachedFile){
     if(attachedFile.isImage){ text=`[Image jointe: ${attachedFile.name}]\n${rawText}`; displayText=rawText; imgUrl=attachedFile.dataUrl; }
     else { text=`[Fichier joint: ${attachedFile.name}]\n${attachedFile.content}\n\n---\n${rawText}`; displayText=`📎 ${attachedFile.name}\n${rawText}`; }
@@ -2938,8 +3047,8 @@ Consigne: Utilise ces informations pour répondre précisément à la demande de
     removeTyping();
     if(!response.ok){const err=await response.json().catch(()=>({})); addMessage('assistant',err.message||err.detail||`Erreur ${response.status}`,true); isGenerating=false; enableInput(); return;}
     const bubble=addMessage('assistant',''); let fullContent=''; const reader=response.body.getReader(); const decoder=new TextDecoder(); let buffer='';
-    while(true){const {done,value}=await reader.read(); if(done) break; buffer+=decoder.decode(value,{stream:true}); const lines=buffer.split('\n'); buffer=lines.pop()||''; for(const line of lines){const t=line.trim(); if(!t||!t.startsWith('data: ')) continue; const data=t.slice(6); if(data==='[DONE]') continue; try{const p=JSON.parse(data); const d=p.choices?.[0]?.delta?.content; if(d){fullContent+=d; bubble.textContent=fullContent; messagesEl.scrollTop=messagesEl.scrollHeight;}}catch{}}}
-    if(fullContent) conversation.push({role:'assistant',content:fullContent}); else bubble.textContent='(Réponse vide)';
+    while(true){const {done,value}=await reader.read(); if(done) break; buffer+=decoder.decode(value,{stream:true}); const lines=buffer.split('\n'); buffer=lines.pop()||''; for(const line of lines){const t=line.trim(); if(!t||!t.startsWith('data: ')) continue; const data=t.slice(6); if(data==='[DONE]') continue; try{const p=JSON.parse(data); const d=p.choices?.[0]?.delta?.content; if(d){fullContent+=d; bubble.innerHTML=renderContent(fullContent); messagesEl.scrollTop=messagesEl.scrollHeight;}}catch{}}}
+    if(fullContent) conversation.push({role:'assistant',content:fullContent}); else bubble.innerHTML='<em>(Réponse vide)</em>';
   }catch(err){removeTyping(); addMessage('assistant','Erreur réseau : '+err.message,true);}
   isGenerating=false; enableInput(); userInput.focus();
 }
@@ -3212,126 +3321,328 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
 <script>
-// ================= MODULE LOCALISATION UNIVERSEL V4 - PC/MOBILE =================
-function __detectDevice() {
-  const ua = navigator.userAgent.toLowerCase();
-  const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  let device = 'PC';
-  if (/android|iphone|ipad|ipod|mobile/i.test(ua)) device = /ipad|tablet/i.test(ua) ? 'Tablette' : 'Mobile';
-  else if (touch && window.innerWidth < 1024) device = 'PC Hybride';
-  let browser = 'Inconnu';
-  if (ua.includes('edg/')) browser='Edge';
-  else if (ua.includes('chrome') && !ua.includes('chromium')) browser='Chrome';
-  else if (ua.includes('safari') && !ua.includes('chrome')) browser='Safari';
-  else if (ua.includes('firefox')) browser='Firefox';
-  else if (ua.includes('opr/')||ua.includes('opera')) browser='Opera';
-  let os = 'Inconnu';
-  if (ua.includes('android')) os='Android';
-  else if (ua.includes('iphone')||ua.includes('ipad')||ua.includes('ipod')) os='iOS';
-  else if (ua.includes('win')) os='Windows';
-  else if (ua.includes('mac')) os='macOS';
-  else if (ua.includes('linux')) os='Linux';
-  return { device, browser, os, isMobile: device!=='PC', ua: navigator.userAgent, lang: navigator.language, screen: `${screen.width}x${screen.height}`, touch };
-}
-async function __getGPS() {
-  return new Promise((res, rej) => {
-    if (!navigator.geolocation) return rej(new Error('Geolocation non supportée'));
-    navigator.geolocation.getCurrentPosition(
-      p => res({ lat:p.coords.latitude, lon:p.coords.longitude, accuracy:p.coords.accuracy, altitude:p.coords.altitude, source:'GPS navigateur' }),
-      e => rej(e),
-      { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
-    );
-  });
-}
-async function __getIP() {
-  try {
-    const r = await fetch('https://ipapi.co/json/');
-    const j = await r.json();
-    return { lat:j.latitude, lon:j.longitude, city:j.city, region:j.region, country:j.country_name, country_code:j.country_code, ip:j.ip, org:j.org, source:'ipapi.co' };
-  } catch {
-    const r = await fetch('https://ipwho.is/');
-    const j = await r.json();
-    return { lat:j.latitude, lon:j.longitude, city:j.city, region:j.region, country:j.country, country_code:j.country_code, ip:j.ip, source:'ipwho.is' };
+// === LIENS CLIQUABLES - gestion dans iframe parent ===
+function openMediaPreview(src){
+  const ov=document.getElementById('mediaPreviewOverlay');
+  const body=document.getElementById('mediaPreviewBody');
+  const title=document.getElementById('mediaPreviewTitle');
+  if(!ov||!body) return;
+  body.innerHTML='';
+  if(src.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || src.startsWith('data:video')){
+    const v=document.createElement('video'); v.src=src; v.controls=true; v.autoplay=true; v.style.maxWidth='100%'; v.style.maxHeight='80vh'; v.style.borderRadius='12px';
+    body.appendChild(v); if(title) title.textContent='🎬 Vidéo';
+  } else {
+    const img=document.createElement('img'); img.src=src; img.style.maxWidth='100%'; img.style.maxHeight='80vh'; img.style.borderRadius='12px'; img.style.objectFit='contain';
+    body.appendChild(img); if(title) title.textContent='🖼️ Image';
   }
+  ov.hidden=false;
 }
-async function __reverse(lat, lon) {
-  try {
-    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=fr`);
-    const j = await r.json();
-    return { city:j.city||j.locality, region:j.principalSubdivision, country:j.countryName, country_code:j.countryCode, postcode:j.postcode, full:`${j.locality||''} ${j.city||''}, ${j.principalSubdivision||''}, ${j.countryName||''}`.trim() };
-  } catch {
-    return {};
-  }
-}
-async function __locateUser(forceIP=false) {
-  const device = __detectDevice();
-  if (!forceIP) {
-    try {
-      const gps = await __getGPS();
-      const rev = await __reverse(gps.lat, gps.lon);
-      const final = { ...gps, ...rev, device, method:'gps', precision: gps.accuracy < 100 ? 'haute' : 'moyenne', timestamp:new Date().toISOString() };
-      window.UserLocation = final;
-      return final;
-    } catch(e){ console.warn('GPS fail', e.message); }
-  }
-  const ip = await __getIP();
-  const rev2 = ip.lat ? await __reverse(ip.lat, ip.lon) : {};
-  const final = { ...ip, ...rev2, device, method:'ip', precision:'ville', timestamp:new Date().toISOString() };
-  window.UserLocation = final;
-  return final;
-}
-function __needsLocation(msg) {
-  if(!msg) return false;
-  const t = msg.toLowerCase();
-  const keys = ['où suis-je','ou suis je','ma position','ma localisation','localise moi','ma ville','autour de moi','près de moi','pres de moi','météo','meteo','temps qu','restaurant','magasin','pharmacie','hôtel','hotel','garage','itinéraire','itineraire','trajet','distance','le plus proche','a proximité','à proximité','adresse','code postal','fuseau horaire','heure locale'];
-  return keys.some(k=>t.includes(k));
-}
-window.UserLocation = window.UserLocation || null;
-window.__locateUser = __locateUser;
-window.__detectDevice = __detectDevice;
-window.needsLocation = __needsLocation;
-window.getUserLocation = __locateUser;
+document.getElementById('mediaPreviewClose')?.addEventListener('click',()=>{document.getElementById('mediaPreviewOverlay').hidden=true;});
+document.getElementById('mediaPreviewOverlay')?.addEventListener('click',(e)=>{if(e.target.id==='mediaPreviewOverlay') e.currentTarget.hidden=true;});
 
-// Pre-warm permission si déjà accordée
-if (navigator.permissions) {
-  navigator.permissions.query({name:'geolocation'}).then(p=>{
-    if(p.state==='granted') __locateUser().then(l=>console.log('📍 Localisation pré-chargée', l)).catch(()=>{});
-  }).catch(()=>{});
-}
-console.log('📍 Module localisation chargé - PC/Mobile auto-detect');
-</script>
+// === EDITEUR IMAGE avec Canvas ===
+let editCtx=null, editImg=null, editRotation=0, editFlipH=1, editFlipV=1, editGrayscale=false;
+let editBrightness=100, editContrast=100;
+let originalImageDataUrl=null;
 
-<script>
-document.addEventListener('DOMContentLoaded', ()=>{
-  const headerBottom = document.querySelector('.header-bottom');
-  if(headerBottom){
-    const btn = document.createElement('button');
-    btn.id='locBtn';
-    btn.className='icon-square';
-    btn.title='Me localiser (GPS/IP)';
-    btn.style.cssText='width:44px;height:44px;flex-shrink:0;background:var(--surface-2);border:1px solid var(--border)';
-    btn.textContent='📍';
-    btn.onclick = async ()=>{
-      const hint=document.getElementById('statusHint');
-      btn.textContent='⏳';
-      try{
-        const loc = await window.__locateUser();
-        window.UserLocation = loc;
-        if(hint){ hint.textContent=`📍 Localisé: ${loc.city||''} ${loc.country||''} (${loc.method}) - ${loc.lat.toFixed(4)},${loc.lon.toFixed(4)}`; hint.style.display='block'; }
-        // Ajoute un message système visible
-        if(typeof addMessage==='function'){
-          addMessage('assistant', `📍 **Localisation détectée**\n- Appareil: ${loc.device.device} (${loc.device.os} / ${loc.device.browser})\n- Méthode: ${loc.method} (${loc.source})\n- Précision: ${loc.precision} ${loc.accuracy? '('+Math.round(loc.accuracy)+'m)':''}\n- Position: ${loc.lat}, ${loc.lon}\n- Ville: ${loc.city||'?'} ${loc.postcode||''} - ${loc.region||''} - ${loc.country||''}\n- [Voir sur carte](https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lon}#map=15/${loc.lat}/${loc.lon})`, false);
-        }
-      }catch(e){
-        if(hint){ hint.textContent='❌ Localisation échouée: '+e.message; hint.style.display='block'; }
-      }finally{ btn.textContent='📍'; }
-    };
-    // insère avant historyBtn
-    const histBtn = document.getElementById('historyBtn');
-    if(histBtn) headerBottom.insertBefore(btn, histBtn);
-    else headerBottom.appendChild(btn);
+function openImageEditor(dataUrl){
+  originalImageDataUrl=dataUrl;
+  const ov=document.getElementById('imageEditorOverlay');
+  const canvas=document.getElementById('editCanvas');
+  if(!canvas) return;
+  editCtx=canvas.getContext('2d');
+  editImg=new Image();
+  editImg.onload=()=>{
+    editRotation=0; editFlipH=1; editFlipV=1; editGrayscale=false;
+    editBrightness=100; editContrast=100;
+    document.getElementById('brightnessRange').value=100;
+    document.getElementById('contrastRange').value=100;
+    drawEditedImage();
+    ov.hidden=false;
+  };
+  editImg.src=dataUrl;
+}
+function drawEditedImage(){
+  if(!editImg||!editCtx) return;
+  const canvas=document.getElementById('editCanvas');
+  const rot = editRotation % 360;
+  let w = editImg.width, h = editImg.height;
+  if(rot===90||rot===270){ [w,h]=[h,w]; }
+  canvas.width=w; canvas.height=h;
+  editCtx.save();
+  editCtx.clearRect(0,0,w,h);
+  editCtx.translate(w/2,h/2);
+  editCtx.rotate(rot*Math.PI/180);
+  editCtx.scale(editFlipH, editFlipV);
+  let filterStr = `brightness(${editBrightness}%) contrast(${editContrast}%)`;
+  if(editGrayscale) filterStr+=' grayscale(100%)';
+  editCtx.filter=filterStr;
+  editCtx.drawImage(editImg, -editImg.width/2, -editImg.height/2);
+  editCtx.restore();
+}
+document.getElementById('rotateLeftBtn')?.addEventListener('click',()=>{editRotation=(editRotation-90+360)%360; drawEditedImage();});
+document.getElementById('rotateRightBtn')?.addEventListener('click',()=>{editRotation=(editRotation+90)%360; drawEditedImage();});
+document.getElementById('flipHBtn')?.addEventListener('click',()=>{editFlipH*=-1; drawEditedImage();});
+document.getElementById('flipVBtn')?.addEventListener('click',()=>{editFlipV*=-1; drawEditedImage();});
+document.getElementById('grayscaleBtn')?.addEventListener('click',()=>{editGrayscale=!editGrayscale; drawEditedImage();});
+document.getElementById('resetFilterBtn')?.addEventListener('click',()=>{
+  editRotation=0; editFlipH=1; editFlipV=1; editGrayscale=false; editBrightness=100; editContrast=100;
+  document.getElementById('brightnessRange').value=100;
+  document.getElementById('contrastRange').value=100;
+  drawEditedImage();
+});
+document.getElementById('brightnessRange')?.addEventListener('input',(e)=>{editBrightness=e.target.value; drawEditedImage();});
+document.getElementById('contrastRange')?.addEventListener('input',(e)=>{editContrast=e.target.value; drawEditedImage();});
+function closeImageEditor(){ document.getElementById('imageEditorOverlay').hidden=true; }
+document.getElementById('imageEditorClose')?.addEventListener('click',closeImageEditor);
+document.getElementById('imageEditorCancel')?.addEventListener('click',closeImageEditor);
+document.getElementById('imageEditorOverlay')?.addEventListener('click',(e)=>{if(e.target.id==='imageEditorOverlay') closeImageEditor();});
+document.getElementById('imageEditorSave')?.addEventListener('click',()=>{
+  const canvas=document.getElementById('editCanvas');
+  const newDataUrl=canvas.toDataURL('image/png');
+  // mettre à jour attachedFile
+  if(typeof attachedImageUrl!=='undefined'){
+    attachedImageUrl=newDataUrl;
+  }
+  if(typeof attachedFile!=='undefined' && attachedFile){
+    attachedFile.dataUrl=newDataUrl;
+    attachedFile.content=`[Image éditée: ${attachedFile.name}]`;
+  }
+  // update preview
+  const preview=document.getElementById('filePreview');
+  if(preview){
+    preview.innerHTML=`<img src="${newDataUrl}" class="file-preview-thumb" /><span class="file-preview-name">🖼️ ${attachedFile?.name||'image'} (édité)</span><button type="button" class="file-preview-remove" id="removeFileBtn">✕</button><div class="file-preview-actions"><button type="button" id="editImgBtn2">✏️ Ré-éditer</button></div>`;
+    preview.hidden=false;
+    document.getElementById('removeFileBtn')?.addEventListener('click',()=>{ if(typeof clearAttachedFile==='function') clearAttachedFile(); });
+    document.getElementById('editImgBtn2')?.addEventListener('click',()=>openImageEditor(newDataUrl));
+  }
+  closeImageEditor();
+});
+
+// === EDITEUR VIDEO ===
+let currentVideoFile=null;
+let currentVideoDataUrl=null;
+function openVideoEditor(file){
+  currentVideoFile=file;
+  const ov=document.getElementById('videoEditorOverlay');
+  const video=document.getElementById('editVideo');
+  if(!video) return;
+  currentVideoDataUrl=URL.createObjectURL(file);
+  video.src=currentVideoDataUrl;
+  video.onloadedmetadata=()=>{
+    const endInput=document.getElementById('videoEnd');
+    if(endInput) endInput.value=video.duration.toFixed(1);
+  };
+  ov.hidden=false;
+}
+function closeVideoEditor(){ document.getElementById('videoEditorOverlay').hidden=true; }
+document.getElementById('videoEditorClose')?.addEventListener('click',closeVideoEditor);
+document.getElementById('videoEditorCancel')?.addEventListener('click',closeVideoEditor);
+document.getElementById('videoEditorOverlay')?.addEventListener('click',(e)=>{if(e.target.id==='videoEditorOverlay') closeVideoEditor();});
+document.getElementById('videoEditorSave')?.addEventListener('click',()=>{
+  const start=parseFloat(document.getElementById('videoStart').value)||0;
+  const end=parseFloat(document.getElementById('videoEnd').value)||0;
+  // on garde le fichier, mais on note les trims dans attachedFile
+  if(attachedFile){
+    attachedFile.trimStart=start;
+    attachedFile.trimEnd=end;
+    attachedFile.content=`[Vidéo: ${attachedFile.name} - trim ${start}s à ${end}s]`;
+  }
+  closeVideoEditor();
+});
+document.getElementById('captureThumbBtn')?.addEventListener('click',()=>{
+  const video=document.getElementById('editVideo');
+  const canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const thumbDataUrl=canvas.toDataURL('image/jpeg',0.8);
+  // proposer comme image jointe alternative
+  if(confirm('Vignette capturée ! Veux-tu l'utiliser comme image jointe à la place de la vidéo ?')){
+    attachedFile={name:(currentVideoFile?.name||'video')+'_thumb.jpg', content:`[Vignette vidéo: ${currentVideoFile?.name}]`, size:thumbDataUrl.length, isImage:true, dataUrl:thumbDataUrl};
+    attachedImageUrl=thumbDataUrl;
+    const preview=document.getElementById('filePreview');
+    if(preview){
+      preview.innerHTML=`<img src="${thumbDataUrl}" class="file-preview-thumb" /><span class="file-preview-name">📸 Vignette de ${currentVideoFile?.name}</span><button type="button" class="file-preview-remove" id="removeFileBtn">✕</button>`;
+      preview.hidden=false;
+      document.getElementById('removeFileBtn')?.addEventListener('click',()=>{ if(typeof clearAttachedFile==='function') clearAttachedFile(); });
+    }
+    closeVideoEditor();
+  } else {
+    // ouvre en preview
+    openMediaPreview(thumbDataUrl);
   }
 });
+
+// === EDITEUR DOCUMENT ===
+function openDocEditor(fileName, content){
+  const ov=document.getElementById('docEditorOverlay');
+  document.getElementById('docFileName').textContent='📄 '+fileName;
+  document.getElementById('docEditorArea').value=content||'';
+  ov.hidden=false;
+}
+function closeDocEditor(){ document.getElementById('docEditorOverlay').hidden=true; }
+document.getElementById('docEditorClose')?.addEventListener('click',closeDocEditor);
+document.getElementById('docEditorCancel')?.addEventListener('click',closeDocEditor);
+document.getElementById('docEditorOverlay')?.addEventListener('click',(e)=>{if(e.target.id==='docEditorOverlay') closeDocEditor();});
+document.getElementById('docEditorSave')?.addEventListener('click',()=>{
+  const newContent=document.getElementById('docEditorArea').value;
+  if(attachedFile){
+    attachedFile.content=newContent;
+    attachedFile.edited=true;
+  }
+  const preview=document.getElementById('filePreview');
+  if(preview && attachedFile){
+    preview.querySelector('.file-preview-name').textContent=`📎 ${attachedFile.name} (édité - ${newContent.length} caractères)`;
+  }
+  closeDocEditor();
+});
+
+// === PATCH handleFileSelected pour inclure édition ===
+(function(){
+  // on intercepte après chargement original
+  const origHandle = window.handleFileSelected;
+  // Notre version améliorée qui remplace l'originale si existante
+})();
+
+// Nouveau handleFileSelected amélioré - écrase l'ancien
+window.handleFileSelected = function(file, isImage=false){
+  if(!file) return;
+  const reader=new FileReader();
+  const filePreview=document.getElementById('filePreview');
+  const isVideo = file.type.startsWith('video/');
+  const isDoc = !isImage && !isVideo;
+
+  if(isImage || file.type.startsWith('image/')){
+    reader.onload=(ev)=>{
+      attachedImageUrl=ev.target.result;
+      attachedFile={name:file.name, content:`[Image: ${file.name}]`, size:file.size, isImage:true, dataUrl:attachedImageUrl, type:file.type};
+      filePreview.innerHTML=`<img src="${attachedImageUrl}" class="file-preview-thumb" /><span class="file-preview-name">🖼️ ${file.name} (${Math.round(file.size/1024)} Ko)</span><button type="button" class="file-preview-remove" id="removeFileBtn">✕</button><div class="file-preview-actions"><button type="button" id="editImageBtn">✏️ Éditer photo</button><button type="button" id="previewImageBtn">👁️ Agrandir</button></div>`;
+      filePreview.hidden=false;
+      document.getElementById('removeFileBtn')?.addEventListener('click',()=>{ if(typeof clearAttachedFile==='function') clearAttachedFile(); });
+      document.getElementById('editImageBtn')?.addEventListener('click',()=>openImageEditor(attachedImageUrl));
+      document.getElementById('previewImageBtn')?.addEventListener('click',()=>openMediaPreview(attachedImageUrl));
+    };
+    reader.readAsDataURL(file);
+  } else if(isVideo){
+    // Vidéo
+    attachedFile={name:file.name, content:`[Vidéo: ${file.name} - ${Math.round(file.size/1024)} Ko]`, size:file.size, isVideo:true, file:file, type:file.type};
+    const videoUrl=URL.createObjectURL(file);
+    filePreview.innerHTML=`<video src="${videoUrl}" class="video-preview" muted loop></video><span class="file-preview-name">🎬 ${file.name} (${Math.round(file.size/1024)} Ko)</span><button type="button" class="file-preview-remove" id="removeFileBtn">✕</button><div class="file-preview-actions"><button type="button" id="editVideoBtn">✏️ Éditer vidéo</button><button type="button" id="previewVideoBtn">👁️ Plein écran</button></div>`;
+    filePreview.hidden=false;
+    document.getElementById('removeFileBtn')?.addEventListener('click',()=>{ if(typeof clearAttachedFile==='function') clearAttachedFile(); URL.revokeObjectURL(videoUrl); });
+    document.getElementById('editVideoBtn')?.addEventListener('click',()=>openVideoEditor(file));
+    document.getElementById('previewVideoBtn')?.addEventListener('click',()=>openMediaPreview(videoUrl));
+  } else {
+    // Document - lecture texte
+    reader.onload=(ev)=>{
+      let text=ev.target.result;
+      // limite
+      if(text.length>100000) text=text.slice(0,100000)+'\n...[tronqué]';
+      attachedFile={name:file.name, content:text, size:file.size, isImage:false, isDoc:true, type:file.type};
+      filePreview.innerHTML=`<span class="file-preview-name">📎 ${file.name} (${Math.round(file.size/1024)} Ko - ${text.length} car.)</span><button type="button" class="file-preview-remove" id="removeFileBtn">✕</button><div class="file-preview-actions"><button type="button" id="editDocBtn">✏️ Éditer document</button></div>`;
+      filePreview.hidden=false;
+      document.getElementById('removeFileBtn')?.addEventListener('click',()=>{ if(typeof clearAttachedFile==='function') clearAttachedFile(); });
+      document.getElementById('editDocBtn')?.addEventListener('click',()=>openDocEditor(file.name, text));
+    };
+    // si pdf/docx on lit en texte brut pour l'instant (peut être binaire mais on tente)
+    if(file.name.endsWith('.pdf')){
+      // pour PDF on indique qu'il faut extraire
+      reader.readAsText(file);
+    } else {
+      reader.readAsText(file);
+    }
+  }
+};
+
+// Patch input vidéo - ajouter accept video
+document.addEventListener('DOMContentLoaded', ()=>{
+  const photoInput=document.getElementById('photoInput');
+  if(photoInput){
+    // autoriser images + videos
+    photoInput.setAttribute('accept','image/*,video/*');
+  }
+  // ajouter input video dédié si besoin
+  const fileBtn=document.getElementById('fileBtn');
+  const fileMenu=document.getElementById('fileMenu');
+  if(fileMenu && !document.querySelector('[data-action="video"]')){
+    const videoItem=document.createElement('button');
+    videoItem.type='button'; videoItem.className='file-menu-item'; videoItem.dataset.action='video';
+    videoItem.textContent='🎬 Choisir une vidéo';
+    fileMenu.appendChild(videoItem);
+    videoItem.addEventListener('click',()=>{
+      fileMenu.hidden=true;
+      // reuse photoInput qui accepte maintenant video
+      photoInput.click();
+    });
+  }
+});
+
+// === PATCH sendMessage pour envoyer image en multimodal Mistral ===
+(function(){
+  // on garde reference originale si besoin
+  const originalSend = window.sendMessage;
+})();
+
+// Intercepte le fetch pour transformer content en format vision si image
+(function(){
+  const origFetch = window.fetch;
+  // on ne patch pas globalement, on patch dans sendMessage directement via override
+})();
+
+// Override sendMessage avec support vision
+const sendMessageOriginal = window.sendMessage;
+window.sendMessage = async function(){
+  const rawText=userInput.value.trim(); const apiKey=getApiKey();
+  if((!rawText && !attachedFile) || !apiKey){ if(!apiKey){ openKeyPanel(); return; } if(!rawText && !attachedFile) return; }
+  if(isGenerating) return;
+  let text=rawText; let displayText=rawText; let imgUrl=null;
+  let visionContent=null; // pour API
+
+  if(attachedFile){
+    if(attachedFile.isImage){
+      text=`[Image jointe: ${attachedFile.name}]\n${rawText}`;
+      displayText=rawText || `🖼️ ${attachedFile.name}`;
+      imgUrl=attachedFile.dataUrl;
+      // préparer contenu multimodal
+      visionContent=[
+        {type:'text', text: rawText || 'Décris / édite cette image'},
+        {type:'image_url', image_url:{url: attachedFile.dataUrl}}
+      ];
+    } else if(attachedFile.isVideo){
+      text=`[Vidéo jointe: ${attachedFile.name} - ${attachedFile.trimStart||0}s à ${attachedFile.trimEnd||'fin'}]\n${rawText}`;
+      displayText=`🎬 ${attachedFile.name}\n${rawText}`;
+      imgUrl=null;
+      // vidéo : on envoie vignette si disponible sinon message
+    } else {
+      text=`[Fichier joint: ${attachedFile.name}]\n${attachedFile.content}\n\n---\n${rawText}`;
+      displayText=`📎 ${attachedFile.name}\n${rawText}`;
+    }
+  }
+  isGenerating=true; sendBtn.disabled=true; userInput.value=''; userInput.style.height='auto';
+  addMessage('user',displayText,false,imgUrl);
+  // conversation stocke texte simple pour historique, mais envoi multimodal si besoin
+  if(visionContent){
+    conversation.push({role:'user', content: visionContent});
+  } else {
+    conversation.push({role:'user', content:text});
+  }
+  showTyping();
+  if(typeof clearAttachedFile==='function') clearAttachedFile(); else { attachedFile=null; attachedImageUrl=null; const fp=document.getElementById('filePreview'); if(fp) fp.hidden=true; }
+
+  try{
+    const activeAgent=getActiveAgent();
+    let messagesToSend=[];
+    if(activeAgent && activeAgent.instructions) messagesToSend.push({role:'system', content:activeAgent.instructions});
+    messagesToSend=messagesToSend.concat(conversation);
+    const response=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:MODEL,messages:messagesToSend,stream:true,temperature:0.7})});
+    removeTyping();
+    if(!response.ok){const err=await response.json().catch(()=>({})); addMessage('assistant',err.message||err.detail||`Erreur ${response.status}`,true); isGenerating=false; if(typeof enableInput==='function') enableInput(); return;}
+    const bubble=addMessage('assistant',''); let fullContent=''; const reader=response.body.getReader(); const decoder=new TextDecoder(); let buffer='';
+    while(true){const {done,value}=await reader.read(); if(done) break; buffer+=decoder.decode(value,{stream:true}); const lines=buffer.split('\n'); buffer=lines.pop()||''; for(const line of lines){const t=line.trim(); if(!t||!t.startsWith('data: ')) continue; const data=t.slice(6); if(data==='[DONE]') continue; try{const p=JSON.parse(data); const d=p.choices?.[0]?.delta?.content; if(d){fullContent+=d; bubble.innerHTML=renderContent(fullContent); messagesEl.scrollTop=messagesEl.scrollHeight;}}catch{}}}
+    if(fullContent) conversation.push({role:'assistant',content:fullContent}); else bubble.innerHTML='<em>(Réponse vide)</em>';
+  }catch(err){removeTyping(); addMessage('assistant','Erreur réseau : '+err.message,true);}
+  isGenerating=false; if(typeof enableInput==='function') enableInput(); userInput.focus();
+};
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
