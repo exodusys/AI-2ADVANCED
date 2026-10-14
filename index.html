@@ -1930,6 +1930,33 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   }
 }
 </style>
+<style>
+/* === FIX TEXTE MODELE ACTUEL PLUS BAS PROCHE BORD === */
+.model-footer{
+  padding: 10px 14px 4px !important;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom,0px)) !important;
+  margin-bottom: 2px !important;
+  transform: translateY(2px) !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  min-height: 28px !important;
+}
+#modelCurrent{
+  display: block !important;
+  margin-bottom: 2px !important;
+  line-height: 1.2 !important;
+  transform: translateY(1px);
+}
+@media (max-width: 600px){
+  .model-footer{
+    padding: 8px 14px 6px !important;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom,0px)) !important;
+    margin-bottom: 2px !important;
+    transform: translateY(1px) !important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
@@ -2035,7 +2062,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
       </div>
     </div>
     <div class="model-list" id="modelList"><p class="model-empty">Entre ta clé API pour charger les modèles…</p></div>
-    <div class="model-footer" style="transform:translateY(-4px)"><span id="modelCurrent" style="font-size:0.75rem;color:var(--text-muted)">Modèle actuel: -</span></div>
+    <div class="model-footer"><span id="modelCurrent" style="font-size:0.75rem;color:var(--text-muted)">Modèle actuel: -</span></div>
   </div>
 </div>
 
