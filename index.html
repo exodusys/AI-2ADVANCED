@@ -2637,9 +2637,15 @@ function saveLocation(loc){
 function setLocationEnabled(enabled){
   locationEnabled = !!enabled;
   localStorage.setItem(LOCATION_ENABLED_KEY, locationEnabled ? 'true' : 'false');
-  if(locationEnabled && !userLocation){
+  if(!locationEnabled){
+    // 🔒 OFF = efface automatiquement la position stockée pour 100% privé
+    userLocation = null;
+    locationStatus = 'idle';
+    locationErrorMsg = '';
+    localStorage.removeItem(LOCATION_KEY);
+    // L'IA ne peut plus localiser du tout
+  }else if(!userLocation){
     // Si on active sans position, on lance une demande
-    // mais on ne bloque pas
     setTimeout(()=>{ if(typeof requestLocation==='function') requestLocation().catch(()=>{}); }, 300);
   }
   updateLocationUI();
@@ -2649,10 +2655,10 @@ function setLocationEnabled(enabled){
     if(locationEnabled){
       sh.textContent = '📍 Service de localisation activé — l\'IA peut utiliser ta position';
     }else{
-      sh.textContent = '📍 Service de localisation désactivé — l\'IA n\'utilise plus ta position';
+      sh.textContent = '📍 Service désactivé + position effacée — 100% privé, l\'IA ne peut plus localiser';
     }
     sh.style.display='block';
-    setTimeout(()=>{ sh.style.display='none'; }, 3000);
+    setTimeout(()=>{ sh.style.display='none'; }, 4000);
   }
 }
 
