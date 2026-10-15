@@ -2075,7 +2075,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <div class="burger-header"><span>☰ Menu</span><button type="button" id="burgerClose" class="burger-close">✕</button></div>
     <div class="burger-list">
 <button type="button" class="burger-item" id="burgerThemeBtn"><span class="burger-icon" id="burgerThemeIcon">🌙</span><span id="burgerThemeLabel">Mode sombre / clair</span></button>
-      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon">📍</span><span>Ma position précise</span></button>
+      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon">📍</span><span>Service de localisation</span></button>
       <button type="button" class="burger-item" id="burgerKeyBtn"><span class="burger-icon">🔑</span><span>Clé API</span></button>
       <button type="button" class="burger-item" id="burgerVortexBtn"><span class="burger-icon">🌌</span><span>Vortex</span></button>
     </div>
@@ -2096,7 +2096,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 <div class="model-overlay loc-overlay" id="locOverlay" hidden>
   <div class="model-panel loc-panel">
     <div class="model-header loc-header">
-      <span>📍 Ma Position Exacte</span>
+      <span>📍 Service de localisation</span>
       <div style="display:flex;align-items:center;gap:8px">
         <button type="button" id="locClose" class="model-close">✕</button>
       </div>
@@ -2105,6 +2105,19 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
       <div class="loc-intro" style="padding:4px 4px 0;">
         <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5;">Obtenez votre adresse complète en un clic. L'IA utilisera automatiquement votre position pour les demandes locales (météo, restos, itinéraires...).</p>
       </div>
+
+      <div id="locServiceToggle" style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:14px;">
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:6px;">
+            <span id="locToggleIcon">📍</span> <span id="locToggleTitle">Service de localisation</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px; line-height:1.3;" id="locServiceDesc">Désactivé — l'IA n'utilise pas ta position</div>
+        </div>
+        <button type="button" id="locToggleBtn" style="margin-left:12px; width:52px; height:30px; border-radius:999px; border:1px solid var(--border); background:var(--surface); position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
+          <span id="locToggleKnob" style="position:absolute; top:2px; left:2px; width:24px; height:24px; border-radius:50%; background:#94a3b8; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+        </button>
+      </div>
+
       <button type="button" id="locActionBtn" class="btn" style="width:100%; height:52px; font-weight:700; font-size:1rem; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;">📍 Localiser ma position précise</button>
       <div id="locStatus" style="display:none;"></div>
       <div id="locResult" style="display:none;"></div>
@@ -2620,6 +2633,33 @@ function saveLocation(loc){
   locationEnabled = true;
   locationStatus = 'success';
 }
+
+function setLocationEnabled(enabled){
+  locationEnabled = !!enabled;
+  localStorage.setItem(LOCATION_ENABLED_KEY, locationEnabled ? 'true' : 'false');
+  if(locationEnabled && !userLocation){
+    // Si on active sans position, on lance une demande
+    // mais on ne bloque pas
+    setTimeout(()=>{ if(typeof requestLocation==='function') requestLocation().catch(()=>{}); }, 300);
+  }
+  updateLocationUI();
+  renderLocPanel();
+  const sh = document.getElementById('statusHint');
+  if(sh){
+    if(locationEnabled){
+      sh.textContent = '📍 Service de localisation activé — l\'IA peut utiliser ta position';
+    }else{
+      sh.textContent = '📍 Service de localisation désactivé — l\'IA n\'utilise plus ta position';
+    }
+    sh.style.display='block';
+    setTimeout(()=>{ sh.style.display='none'; }, 3000);
+  }
+}
+
+function toggleLocationService(){
+  setLocationEnabled(!locationEnabled);
+}
+
 function clearLocationData(){
   userLocation = null;
   locationStatus = 'idle';
@@ -2745,7 +2785,7 @@ function updateLocationUI(){
     if(locationStatus==='success' && locationEnabled && userLocation){
       badge.classList.add('active');
       badge.style.display='flex';
-      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m`;
+      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m • Service ON`;
     }else{
       badge.classList.remove('active');
       badge.style.display='none';
@@ -2753,13 +2793,52 @@ function updateLocationUI(){
   }
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
-    if(locationStatus==='success' && locationEnabled){
-      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation ? userLocation.ville : ''}</span>`;
+    if(locationEnabled && userLocation && locationStatus==='success'){
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • ON • ${userLocation.ville}</span>`;
+    }else if(locationEnabled){
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • ON</span>`;
     }else{
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Ma position précise</span>`;
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • OFF</span>`;
+    }
+  }
+  // Toggle UI
+  const toggleBtn = document.getElementById('locToggleBtn');
+  const toggleKnob = document.getElementById('locToggleKnob');
+  const toggleIcon = document.getElementById('locToggleIcon');
+  const toggleTitle = document.getElementById('locToggleTitle');
+  const toggleDesc = document.getElementById('locServiceDesc');
+  if(toggleBtn && toggleKnob){
+    if(locationEnabled){
+      toggleBtn.style.background = '#22c55e';
+      toggleBtn.style.borderColor = '#22c55e';
+      toggleKnob.style.left = '26px';
+      toggleKnob.style.background = '#fff';
+      if(toggleIcon) toggleIcon.textContent = '✅';
+      if(toggleTitle) toggleTitle.textContent = 'Service de localisation activé';
+      if(toggleDesc){
+        if(userLocation){
+          toggleDesc.textContent = `Activé — l'IA utilise: ${userLocation.ville} • ±${Math.round(userLocation.accuracy)}m • ${new Date(userLocation.timestamp).toLocaleTimeString('fr-CH')}`;
+          toggleDesc.style.color = '#166534';
+        }else{
+          toggleDesc.textContent = 'Activé — en attente de position...';
+          toggleDesc.style.color = '#166534';
+        }
+      }
+    }else{
+      toggleBtn.style.background = 'var(--surface)';
+      toggleBtn.style.borderColor = 'var(--border)';
+      toggleKnob.style.left = '2px';
+      toggleKnob.style.background = '#94a3b8';
+      if(toggleIcon) toggleIcon.textContent = '📍';
+      if(toggleTitle) toggleTitle.textContent = 'Service de localisation désactivé';
+      if(toggleDesc){
+        toggleDesc.textContent = 'Désactivé — l\'IA n\'utilise pas ta position. Active pour plus de précision.';
+        toggleDesc.style.color = 'var(--text-muted)';
+      }
     }
   }
 }
+
 
 function renderLocPanel(){
   const statusEl=document.getElementById('locStatus');
@@ -2773,7 +2852,7 @@ function renderLocPanel(){
     statusEl.style.display='none';
     resultEl.style.display='none';
     actionBtn.style.display='flex';
-    actionBtn.textContent='📍 Localiser ma position précise';
+    actionBtn.textContent='📍 Actualiser manuellement ma position';
     actionBtn.disabled=false;
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
@@ -2791,7 +2870,7 @@ function renderLocPanel(){
     statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;margin-bottom:4px;">❌ ${firstLine}</div><div style="font-size:0.8rem;opacity:0.9;white-space:pre-line;">${rest}</div></div>`;
     resultEl.style.display='none';
     actionBtn.style.display='flex';
-    actionBtn.textContent='🔄 Réessayer';
+    actionBtn.textContent='🔄 Réessayer l\'actualisation';
     actionBtn.disabled=false;
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
@@ -2813,7 +2892,7 @@ function renderLocPanel(){
       </div>
     `;
     actionBtn.style.display='flex';
-    actionBtn.textContent='🔄 Actualiser ma position';
+    actionBtn.textContent='🔄 Actualiser manuellement ma position';
     if(copyBtn) copyBtn.style.display='flex';
     if(clearBtn) clearBtn.style.display='flex';
   }
@@ -2855,6 +2934,8 @@ function getLocationAgeMinutes(){
 }
 
 function shouldAutoRefreshForQuery(text){
+  if(!locationEnabled) return false;
+
   if(!isLocalQuery(text)) return false;
   const age = getLocationAgeMinutes();
   // Si pas de loc, ou loc > 2 min, ou précision > 100m, on refresh
@@ -2865,6 +2946,11 @@ function shouldAutoRefreshForQuery(text){
 }
 
 async function autoRefreshLocationIfNeeded(queryText, {force=false, showHint=true}={}){
+  if(!locationEnabled && !force){
+    // Si service désactivé, on ne refresh pas automatiquement
+    return userLocation;
+  }
+
   const needs = force || shouldAutoRefreshForQuery(queryText);
   if(!needs) return userLocation;
   const sh = document.getElementById('statusHint');
@@ -3919,6 +4005,14 @@ if(locClearBtn){
     }
   });
 }
+
+const locToggleBtnEl = document.getElementById('locToggleBtn');
+if(locToggleBtnEl){
+  locToggleBtnEl.addEventListener('click', ()=>{
+    if(typeof toggleLocationService==='function') toggleLocationService();
+  });
+}
+
 if(locationBadgeClear){
   locationBadgeClear.addEventListener('click', ()=>{
     if(typeof clearLocationData==='function') clearLocationData();
