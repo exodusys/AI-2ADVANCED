@@ -2083,6 +2083,17 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 .loc-status-loading{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;font-size:0.85rem}
 #locationBadge{display:none}
 #locationBadge.active{display:flex !important}
+  /* Toggle Service Localisation */
+  .loc-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;transition:all 0.2s}
+  .loc-toggle-row.active{border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.08)}
+  .loc-toggle-row.inactive{border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.06)}
+  .loc-toggle-btn{position:relative;width:56px;height:32px;border-radius:16px;border:2px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.25s;flex-shrink:0}
+  .loc-toggle-btn.active{background:#22c55e;border-color:#22c55e}
+  .loc-toggle-btn.inactive{background:var(--surface-2);border-color:var(--border)}
+  .loc-toggle-btn::after{content:'';position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.25s}
+  .loc-toggle-btn.active::after{transform:translateX(24px)}
+  .loc-toggle-info{flex:1;min-width:0;margin-right:12px}
+
 @media (max-width:600px){
   .loc-panel{width:calc(100vw - 16px) !important;max-height:calc(100dvh - 16px) !important;border-radius:14px !important;margin:0 auto !important}
 }
@@ -2125,6 +2136,16 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <div class="model-list loc-body" id="locBody" style="padding:14px; display:flex; flex-direction:column; gap:12px;">
       <div class="loc-intro" style="padding:4px 4px 0;">
         <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5;">Obtenez votre adresse complète en un clic. L'IA utilisera automatiquement votre position pour les demandes locales (météo, restos, itinéraires...).</p>
+      </div>
+      <!-- Toggle Activation Service -->
+      <div id="locToggleRow" class="loc-toggle-row inactive">
+        <div class="loc-toggle-info">
+          <div style="font-weight:700; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
+            <span id="locToggleIcon">📍</span><span id="locToggleTitle">Service de localisation</span>
+          </div>
+          <div id="locToggleDesc" style="font-size:0.75rem; color:var(--text-muted); margin-top:3px; line-height:1.3;">Désactivé : le tchat ne peut pas accéder à ta position</div>
+        </div>
+        <button type="button" id="locToggleBtn" class="loc-toggle-btn inactive" title="Activer/désactiver le service de localisation"></button>
       </div>
       <button type="button" id="locActionBtn" class="btn" style="width:100%; height:52px; font-weight:700; font-size:1rem; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;">📍 Localiser ma position précise</button>
       <div id="locStatus" style="display:none;"></div>
@@ -2623,23 +2644,39 @@ let locationStatus = 'idle';
 let locationErrorMsg = '';
 let locationEnabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
 
+// Si première visite et qu'on a déjà une loc, on active par défaut
 function loadLocation(){
   try{
     const raw = localStorage.getItem(LOCATION_KEY);
-    if(raw){ 
-      userLocation = JSON.parse(raw); 
-      locationStatus = 'success'; 
-      locationEnabled = true;
-      localStorage.setItem(LOCATION_ENABLED_KEY,'true');
+    const enabledRaw = localStorage.getItem(LOCATION_ENABLED_KEY);
+    if(raw){
+      userLocation = JSON.parse(raw);
+      // Respecte le flag stocké, sinon active par défaut si loc existe
+      if(enabledRaw === null){
+        locationEnabled = true;
+        localStorage.setItem(LOCATION_ENABLED_KEY,'true');
+      } else {
+        locationEnabled = enabledRaw === 'true';
+      }
+      locationStatus = 'success';
+    } else {
+      // Pas de loc: si flag null, désactivé par défaut
+      locationEnabled = enabledRaw === 'true';
+      locationStatus = 'idle';
     }
-  }catch{}
+  }catch{
+    locationEnabled = false;
+  }
 }
 function saveLocation(loc){
   userLocation = loc;
   localStorage.setItem(LOCATION_KEY, JSON.stringify(loc));
+  // Sauvegarder une position active automatiquement le service (action manuelle)
   localStorage.setItem(LOCATION_ENABLED_KEY, 'true');
   locationEnabled = true;
   locationStatus = 'success';
+  updateLocationUI();
+  renderLocPanel();
 }
 function clearLocationData(){
   userLocation = null;
@@ -2650,6 +2687,51 @@ function clearLocationData(){
   locationEnabled = false;
   updateLocationUI();
   renderLocPanel();
+  const sh=document.getElementById('statusHint');
+  if(sh){ sh.textContent='📍 Position effacée et service désactivé'; sh.style.display='block'; setTimeout(()=>sh.style.display='none',3000); }
+}
+function setLocationServiceEnabled(enabled){
+  locationEnabled = !!enabled;
+  localStorage.setItem(LOCATION_ENABLED_KEY, locationEnabled ? 'true' : 'false');
+  updateLocationUI();
+  renderLocPanel();
+  updateLocationToggleUI();
+  const sh=document.getElementById('statusHint');
+  if(sh){
+    if(locationEnabled){
+      sh.textContent = userLocation ? '📍 Service de localisation activé' : '📍 Service activé — localise-toi pour que l\'IA utilise ta position';
+    } else {
+      sh.textContent = '📍 Service de localisation désactivé — le tchat ne peut plus accéder à ta position';
+    }
+    sh.style.display='block';
+    setTimeout(()=>{ if(sh) sh.style.display='none'; }, 3500);
+  }
+}
+function toggleLocationService(){
+  setLocationServiceEnabled(!locationEnabled);
+}
+function updateLocationToggleUI(){
+  const row=document.getElementById('locToggleRow');
+  const btn=document.getElementById('locToggleBtn');
+  const desc=document.getElementById('locToggleDesc');
+  const title=document.getElementById('locToggleTitle');
+  const icon=document.getElementById('locToggleIcon');
+  if(!row || !btn) return;
+  if(locationEnabled){
+    row.classList.remove('inactive'); row.classList.add('active');
+    btn.classList.remove('inactive'); btn.classList.add('active');
+    if(desc) desc.textContent = userLocation ? `Activé : l'IA utilise ta position (${userLocation.ville})` : 'Activé : localise-toi pour que l\'IA utilise ta position';
+    if(title) title.textContent = 'Service de localisation — ON';
+    if(icon) icon.textContent = '✅';
+    btn.title='Désactiver le service de localisation';
+  } else {
+    row.classList.remove('active'); row.classList.add('inactive');
+    btn.classList.remove('active'); btn.classList.add('inactive');
+    if(desc) desc.textContent = 'Désactivé : le tchat ne peut pas accéder à ta position et l\'indiquera';
+    if(title) title.textContent = 'Service de localisation — OFF';
+    if(icon) icon.textContent = '🚫';
+    btn.title='Activer le service de localisation';
+  }
 }
 
 async function reverseGeocode(lat, lon){
@@ -2711,7 +2793,7 @@ async function requestLocation(opts={}){
     locationStatus='error'; locationErrorMsg='Connexion non sécurisée — la géolocalisation nécessite HTTPS.\nServez le fichier en https:// ou utilisez localhost.';
     updateLocationUI(); renderLocPanel(); return null;
   }
-  // Manuel: autorisé même si le tchat ne le demande pas - pas de check isLocalQuery ici
+  // Manuel: autorisé même si service désactivé - c'est le bouton dans Ma position exacte
   locationStatus='loading'; locationErrorMsg=''; updateLocationUI(); renderLocPanel();
   try{
     const pos = await getCurrentPositionPromise();
@@ -2720,7 +2802,6 @@ async function requestLocation(opts={}){
     const full = {...coords, ...addr, timestamp: Date.now(), source: 'navigator.geolocation + nominatim' + (isManual ? ' [manuel]' : '') + (force ? ' [force]' : '')};
     saveLocation(full);
     locationStatus='success';
-    // FIX: update UI AVANT return (était unreachable avant)
     updateLocationUI(); renderLocPanel();
     const sh=document.getElementById('statusHint');
     if(sh){
@@ -2746,18 +2827,27 @@ async function requestLocation(opts={}){
   }
 }
 
-// Fonction dédiée au rafraîchissement manuel sans condition de tchat
+// Fonction dédiée au rafraîchissement manuel SANS condition de tchat - autorisée même si service OFF, et elle réactive le service
 async function manualRefreshLocation(){
-  // Force le refresh même si isLocalQuery est false, même si la loc est récente
-  return await requestLocation({force:true, manual:true});
+  const loc = await requestLocation({force:true, manual:true});
+  // Le fait de localiser manuellement active le service
+  if(loc){
+    setLocationServiceEnabled(true);
+  }
+  return loc;
 }
 
 function formatLocationForAI(){
-  if(!userLocation || !locationEnabled) return null;
+  // VÉRIFICATION À CHAQUE DEMANDE IA - si service désactivé, on informe le tchat
+  if(!locationEnabled){
+    return `[Contexte Localisation - SERVICE DÉSACTIVÉ] Le service de localisation est DÉSACTIVÉ par l'utilisateur. Tu ne peux PAS accéder à sa position. Tu dois informer l'utilisateur que la localisation est désactivée, que tu ne peux pas trouver sa position, et lui dire d'aller dans le menu ☰ > Ma position exacte > activer le bouton Service de localisation pour l'utiliser. Ne hallucine JAMAIS une adresse ou des coordonnées. Si la question nécessite une localisation (météo, resto, etc.), explique que le service est OFF.`;
+  }
+  if(!userLocation){
+    return `[Contexte Localisation - AUCUNE POSITION] Le service de localisation est activé mais aucune position n'a encore été enregistrée. Informe l'utilisateur qu'aucune position n'est disponible et invite-le à aller dans ☰ > Ma position exacte > 📍 Localiser ma position précise. Ne hallucine pas de position.`;
+  }
   const ageMin = Math.round((Date.now()-userLocation.timestamp)/60000);
   const freshness = ageMin<2 ? "à l'instant" : ageMin<60 ? `il y a ${ageMin} min` : `il y a ${Math.round(ageMin/60)}h`;
-  return `[Contexte Localisation Utilisateur - UTILISE-LE SEULEMENT SI LA QUESTION NÉCESSITE LA POSITION]
-L'utilisateur a activé le partage de position précise.
+  return `[Contexte Localisation Utilisateur - UTILISE-LE SEULEMENT SI LA QUESTION NÉCESSITE LA POSITION] L'utilisateur a activé le partage de position précise.
 
 - Adresse complète: ${userLocation.adresseComplete}
 - Rue: ${userLocation.rue}
@@ -2770,11 +2860,13 @@ ${userLocation.quartier ? `- Quartier: ${userLocation.quartier}` : ''}
 - Précision GPS: ~${Math.round(userLocation.accuracy)}m
 - Fraîcheur: ${freshness} (${new Date(userLocation.timestamp).toLocaleString('fr-CH')})
 - Source: ${userLocation.source}
+- Service: ACTIVÉ
 
 Consignes:
 - Utilise pour: météo, restaurants, commerces, itinéraires, horaires, "autour de moi", "près de moi", etc.
 - Ne révèle JAMAIS lat/lon sauf demande explicite. Préfère adresse lisible.
 - Si question non locale, IGNORE ce contexte.
+- Le bouton manuel dans Ma position exacte permet de rafraîchir à tout moment sans condition de tchat.
 `;
 }
 
@@ -2793,12 +2885,15 @@ function updateLocationUI(){
   }
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
-    if(locationStatus==='success' && locationEnabled){
-      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation ? userLocation.ville : ''}</span>`;
-    }else{
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Ma position précise</span>`;
+    if(locationEnabled && userLocation && locationStatus==='success'){
+      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation.ville} — ON</span>`;
+    } else if(locationEnabled){
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Localisation ON — pas de position</span>`;
+    } else {
+      btn.innerHTML=`<span class="burger-icon">🚫</span><span>Localisation OFF</span>`;
     }
   }
+  updateLocationToggleUI();
 }
 
 function renderLocPanel(){
@@ -2809,13 +2904,20 @@ function renderLocPanel(){
   const clearBtn=document.getElementById('locClearBtn');
   if(!statusEl||!resultEl||!actionBtn) return;
 
-  if(locationStatus==='idle'){
-    statusEl.style.display='none';
+  updateLocationToggleUI();
+
+  if(locationStatus==='idle' && !userLocation){
+    statusEl.style.display='block';
+    if(!locationEnabled){
+      statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;margin-bottom:4px;">🚫 Service désactivé</div><div style="font-size:0.8rem;opacity:0.9;">Le tchat ne peut pas accéder à ta position. Active le service ci-dessus pour permettre à l'IA d'utiliser ta localisation quand nécessaire.</div></div>`;
+    } else {
+      statusEl.innerHTML=`<div class="loc-status-loading" style="border-style:dashed;"><span>ℹ️</span><div><div style="font-weight:600;">Aucune position enregistrée</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Service activé mais pas de position. Clique sur Localiser pour en obtenir une.</div></div></div>`;
+    }
     resultEl.style.display='none';
     actionBtn.style.display='flex';
     actionBtn.textContent='📍 Localiser ma position précise';
     actionBtn.disabled=false;
-    actionBtn.title='Localiser - autorisé sans condition';
+    actionBtn.title='Localiser - autorisé même si service OFF (activera le service)';
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
   }else if(locationStatus==='loading'){
@@ -2838,7 +2940,11 @@ function renderLocPanel(){
     if(clearBtn) clearBtn.style.display='none';
   }else if(locationStatus==='success' && userLocation){
     statusEl.style.display='block';
-    statusEl.innerHTML=`<div class="loc-status-success">✅ Position obtenue avec ~${Math.round(userLocation.accuracy)}m de précision</div>`;
+    if(locationEnabled){
+      statusEl.innerHTML=`<div class="loc-status-success">✅ Position obtenue avec ~${Math.round(userLocation.accuracy)}m de précision — Service ACTIVÉ, l'IA peut l'utiliser</div>`;
+    } else {
+      statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;">🚫 Position enregistrée mais service DÉSACTIVÉ</div><div style="font-size:0.75rem;margin-top:2px;">L'IA ne peut pas l'utiliser. Active le service ci-dessus.</div></div>`;
+    }
     resultEl.style.display='block';
     resultEl.innerHTML=`
       <div class="loc-result-card">
@@ -2855,8 +2961,8 @@ function renderLocPanel(){
     `;
     actionBtn.style.display='flex';
     actionBtn.textContent='🔄 Actualiser ma position';
-    actionBtn.disabled=false; // Toujours autorisé manuellement, même si tchat ne demande pas
-    actionBtn.title='Rafraîchir manuellement (sans condition)';
+    actionBtn.disabled=false;
+    actionBtn.title='Rafraîchir manuellement (sans condition de tchat) - toujours autorisé';
     if(copyBtn) copyBtn.style.display='flex';
     if(clearBtn) clearBtn.style.display='flex';
   }
@@ -2864,7 +2970,7 @@ function renderLocPanel(){
 
 function openLocPanel(){
   const overlay=document.getElementById('locOverlay');
-  if(overlay){ overlay.hidden=false; renderLocPanel(); }
+  if(overlay){ overlay.hidden=false; renderLocPanel(); updateLocationToggleUI(); }
   if(typeof closeBurgerMenu==='function') closeBurgerMenu();
   if(typeof closeVortexPanel==='function') closeVortexPanel();
   if(typeof closeBgPanel==='function') closeBgPanel();
@@ -2898,9 +3004,10 @@ function getLocationAgeMinutes(){
 }
 
 function shouldAutoRefreshForQuery(text){
+  // Vérification service: si OFF, on ne refresh pas automatiquement sauf force manuel
+  if(!locationEnabled) return false;
   if(!isLocalQuery(text)) return false;
   const age = getLocationAgeMinutes();
-  // Si pas de loc, ou loc > 2 min, ou précision > 100m, on refresh
   if(!userLocation) return true;
   if(age > 2) return true;
   if(userLocation.accuracy && userLocation.accuracy > 100) return true;
@@ -2908,6 +3015,8 @@ function shouldAutoRefreshForQuery(text){
 }
 
 async function autoRefreshLocationIfNeeded(queryText, {force=false, showHint=true}={}){
+  // Si service désactivé et pas de force manuel, on ne fait rien
+  if(!locationEnabled && !force) return null;
   const needs = force || shouldAutoRefreshForQuery(queryText);
   if(!needs) return userLocation;
   const sh = document.getElementById('statusHint');
@@ -2931,19 +3040,19 @@ async function autoRefreshLocationIfNeeded(queryText, {force=false, showHint=tru
   }
 }
 
-// Background refresh si loc ancienne >10min, même sans requête locale
+// Background refresh si loc ancienne >10min, même sans requête locale - seulement si service ON
 function maybeBackgroundRefresh(){
   if(!locationEnabled || !userLocation) return;
   const age = getLocationAgeMinutes();
   if(age > 10){
-    // refresh silencieux sans bloquer
     requestLocation().catch(()=>{});
   }
 }
 
 loadLocation();
-setTimeout(()=>{ updateLocationUI(); }, 250);
+setTimeout(()=>{ updateLocationUI(); updateLocationToggleUI(); }, 250);
 // ========== FIN MODULE LOCALISATION ==========
+
 
 function getActiveAgent(){return agents.find(a=>a.id===activeAgentId)||null;}
 
@@ -3840,24 +3949,35 @@ if(!SpeechRecognition){
 
 async function sendMessage(){
   const rawText=userInput.value.trim(); const apiKey=getApiKey();
-  // 📍 Auto-actualisation si requête locale
+  // 📍 VÉRIFICATION À CHAQUE DEMANDE IA - localisation activée ou pas ?
   if(rawText){
     try{
+      // Pour chaque demande, on vérifie si la loc est activée
       if(typeof isLocalQuery==='function' && isLocalQuery(rawText)){
-        const age = typeof getLocationAgeMinutes==='function' ? getLocationAgeMinutes() : Infinity;
-        if(!userLocation || age > 2 || (userLocation && userLocation.accuracy > 100)){
-          // On tente d'actualiser avant d'envoyer à l'IA pour précision maximale
-          if(typeof autoRefreshLocationIfNeeded==='function'){
-            await autoRefreshLocationIfNeeded(rawText, {showHint:true});
+        if(!locationEnabled){
+          // Service DÉSACTIVÉ: le tchat ne peut pas trouver de localisation et l'indique
+          const sh=document.getElementById('statusHint');
+          if(sh){
+            sh.textContent='🚫 Localisation désactivée — active-la dans ☰ > Ma position exacte pour les requêtes locales';
+            sh.style.display='block';
+            setTimeout(()=>{ if(sh) sh.style.display='none'; }, 4000);
+          }
+          // On ne tente pas d'auto-refresh, formatLocationForAI va dire que c'est OFF
+        } else {
+          // Service ACTIVÉ: vérifie si besoin de refresh
+          const age = typeof getLocationAgeMinutes==='function' ? getLocationAgeMinutes() : Infinity;
+          if(!userLocation || age > 2 || (userLocation && userLocation.accuracy > 100)){
+            if(typeof autoRefreshLocationIfNeeded==='function'){
+              await autoRefreshLocationIfNeeded(rawText, {showHint:true});
+            }
           }
         }
       } else {
-        // Même si pas locale, refresh en background si >10min
-        if(typeof maybeBackgroundRefresh==='function') maybeBackgroundRefresh();
+        // Pas une requête locale: background refresh seulement si service ON
+        if(locationEnabled && typeof maybeBackgroundRefresh==='function') maybeBackgroundRefresh();
       }
     }catch(e){
       console.warn('auto refresh loc error', e);
-      // On continue même si loc échoue
     }
   }
 
@@ -3974,6 +4094,20 @@ if(locClearBtn){
 if(locationBadgeClear){
   locationBadgeClear.addEventListener('click', ()=>{
     if(typeof clearLocationData==='function') clearLocationData();
+  });
+}
+const locToggleBtn = document.getElementById('locToggleBtn');
+const locToggleRow = document.getElementById('locToggleRow');
+if(locToggleBtn){
+  locToggleBtn.addEventListener('click', ()=>{
+    if(typeof toggleLocationService==='function') toggleLocationService();
+  });
+}
+if(locToggleRow){
+  locToggleRow.addEventListener('click', (e)=>{
+    // Evite double déclenchement si on clique directement sur le bouton
+    if(e.target.id === 'locToggleBtn') return;
+    if(typeof toggleLocationService==='function') toggleLocationService();
   });
 }
 
