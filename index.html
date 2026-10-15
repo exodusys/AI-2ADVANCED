@@ -2092,6 +2092,13 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   .loc-pastille.off{background:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,0.15), 0 0 8px rgba(239,68,68,0.5);}
   .loc-pastille.idle{background:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,0.15);}
   .loc-pastille.loading{background:#3b82f6; animation: pastillePulse 1.2s ease-in-out infinite;}
+  /* Pastille dans le menu localisation - remplace l'icône */
+  .loc-menu-pastille{display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-right:2px; vertical-align:middle;}
+  .loc-menu-pastille.on{background:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,0.2), 0 0 6px rgba(34,197,94,0.4);}
+  .loc-menu-pastille.off{background:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,0.2);}
+  .loc-menu-pastille.idle{background:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,0.2);}
+  .loc-menu-pastille.loading{background:#3b82f6; animation: pastillePulse 1.2s ease-in-out infinite;}
+
   @keyframes pastillePulse{0%,100%{transform:scale(1); opacity:1}50%{transform:scale(1.2); opacity:0.8}}
 
   /* Toggle Service Localisation */
@@ -2728,6 +2735,24 @@ function updateLocationToggleUI(){
   const title=document.getElementById('locToggleTitle');
   const icon=document.getElementById('locToggleIcon');
   if(!row || !btn) return;
+  if(locationStatus==='loading'){
+    row.classList.remove('inactive','active');
+    row.style.borderColor='rgba(59,130,246,0.35)';
+    row.style.background='rgba(59,130,246,0.08)';
+    btn.className='loc-toggle-btn';
+    btn.style.background='#3b82f6';
+    btn.style.borderColor='#3b82f6';
+    if(desc) desc.textContent = 'Recherche GPS en cours...';
+    if(title) title.textContent = 'Service — Recherche...';
+    if(icon) icon.textContent = '🔵';
+    btn.title='Recherche GPS en cours';
+    return;
+  }
+  // Reset inline styles
+  row.style.borderColor='';
+  row.style.background='';
+  btn.style.background='';
+  btn.style.borderColor='';
   if(locationEnabled){
     row.classList.remove('inactive'); row.classList.add('active');
     btn.classList.remove('inactive'); btn.classList.add('active');
@@ -2912,12 +2937,14 @@ function updateLocationUI(){
 
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
-    if(locationEnabled && userLocation && locationStatus==='success'){
-      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation.ville} — ON</span>`;
+    if(locationStatus==='loading'){
+      btn.innerHTML=`<span class="loc-menu-pastille loading"></span><span>Recherche GPS en cours...</span>`;
+    } else if(locationEnabled && userLocation && locationStatus==='success'){
+      btn.innerHTML=`<span class="loc-menu-pastille on"></span><span>Position active: ${userLocation.ville} — ON</span>`;
     } else if(locationEnabled){
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Localisation ON — pas de position</span>`;
+      btn.innerHTML=`<span class="loc-menu-pastille idle"></span><span>Localisation ON — pas de position</span>`;
     } else {
-      btn.innerHTML=`<span class="burger-icon">🚫</span><span>Localisation OFF</span>`;
+      btn.innerHTML=`<span class="loc-menu-pastille off"></span><span>Localisation OFF</span>`;
     }
   }
   updateLocationToggleUI();
