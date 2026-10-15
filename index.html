@@ -2615,6 +2615,49 @@ let locationStatus = 'idle';
 let locationErrorMsg = '';
 let locationEnabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
 
+
+function refreshLocationStateFromStorage(){
+  try{
+    const enabledRaw = localStorage.getItem(LOCATION_ENABLED_KEY);
+    locationEnabled = enabledRaw === 'true';
+    const raw = localStorage.getItem(LOCATION_KEY);
+    if(raw && locationEnabled){
+      try{
+        const parsed = JSON.parse(raw);
+        // Vérifie que la donnée est valide
+        if(parsed && parsed.lat && parsed.lon && parsed.timestamp){
+          userLocation = parsed;
+          if(locationStatus !== 'loading'){
+            locationStatus = 'success';
+          }
+        }else{
+          userLocation = null;
+          locationStatus = 'idle';
+        }
+      }catch{
+        userLocation = null;
+        locationStatus = 'idle';
+      }
+    }else{
+      // Si service désactivé ou pas de données, on force null pour garantir que l'IA ne peut pas localiser
+      if(!locationEnabled){
+        userLocation = null;
+        locationStatus = 'idle';
+      }
+    }
+  }catch(e){
+    console.warn('refreshLocationState error', e);
+  }
+  return {enabled: locationEnabled, hasLocation: !!userLocation, location: userLocation};
+}
+
+function logLocationStateForMessage(queryText){
+  const state = refreshLocationStateFromStorage();
+  const age = state.hasLocation ? Math.round((Date.now() - state.location.timestamp)/60000) : null;
+  console.log(`[📍 Service Loc] Vérification avant message: enabled=${state.enabled}, hasLoc=${state.hasLocation}, age=${age !== null ? age+'min' : 'N/A'}, queryLocal=${typeof isLocalQuery==='function' ? isLocalQuery(queryText) : 'unknown'}`);
+  return state;
+}
+
 function loadLocation(){
   try{
     const raw = localStorage.getItem(LOCATION_KEY);
@@ -3888,26 +3931,42 @@ if(!SpeechRecognition){
 
 
 async function sendMessage(){
+  // 📍 VÉRIFICATION ÉTAT LOCATION À CHAQUE MESSAGE (exigence utilisateur)
+  let locState = {enabled:false, hasLocation:false, location:null};
+  try{
+    if(typeof logLocationStateForMessage==='function'){
+      const rawForCheck = userInput.value.trim();
+      locState = logLocationStateForMessage(rawForCheck);
+    }else if(typeof refreshLocationStateFromStorage==='function'){
+      locState = refreshLocationStateFromStorage();
+    }
+    // Met à jour l'UI pour refléter l'état réel
+    if(typeof updateLocationUI==='function') updateLocationUI();
+  }catch(e){ console.warn('loc state check failed', e); }
+
   const rawText=userInput.value.trim(); const apiKey=getApiKey();
-  // 📍 Auto-actualisation si requête locale
-  if(rawText){
+  // 📍 Auto-actualisation si requête locale (après vérification état)
+  if(rawText && locState.enabled){
     try{
       if(typeof isLocalQuery==='function' && isLocalQuery(rawText)){
-        const age = typeof getLocationAgeMinutes==='function' ? getLocationAgeMinutes() : Infinity;
-        if(!userLocation || age > 2 || (userLocation && userLocation.accuracy > 100)){
-          // On tente d'actualiser avant d'envoyer à l'IA pour précision maximale
+        const age = locState.hasLocation && locState.location ? (Date.now() - locState.location.timestamp)/60000 : Infinity;
+        const accuracy = locState.location ? locState.location.accuracy : Infinity;
+        if(!locState.hasLocation || age > 2 || accuracy > 100){
           if(typeof autoRefreshLocationIfNeeded==='function'){
             await autoRefreshLocationIfNeeded(rawText, {showHint:true});
+            // Re-vérifie après refresh
+            locState = refreshLocationStateFromStorage();
           }
         }
       } else {
-        // Même si pas locale, refresh en background si >10min
         if(typeof maybeBackgroundRefresh==='function') maybeBackgroundRefresh();
       }
     }catch(e){
       console.warn('auto refresh loc error', e);
-      // On continue même si loc échoue
     }
+  } else if(!locState.enabled && rawText){
+    // Service désactivé → garantit que l'IA ne peut pas localiser
+    console.log('[📍 Service Loc] Service désactivé - l\'IA ne recevra pas de localisation pour ce message');
   }
 
   if((!rawText && !attachedFile) || !apiKey){ if(!apiKey){ openKeyPanel(); return; } if(!rawText && !attachedFile) return; }
