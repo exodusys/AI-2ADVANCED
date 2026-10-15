@@ -2168,6 +2168,17 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
   .user-menu{top:68px;right:8px;width:calc(100vw - 16px)}
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// Config EmailJS - remplace par tes clés
+window.EMAILJS_CONFIG = {
+  publicKey: 'TON_PUBLIC_KEY_EMAILJS',
+  serviceId: 'TON_SERVICE_ID',
+  templateId: 'TON_TEMPLATE_ID'
+};
+</script>
+
 </head>
 <body>
 <div id="aiBg"><div class="ai-layer"></div></div>
@@ -3907,8 +3918,15 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
       <button class="auth-btn primary" id="authSubmitBtn">Se connecter</button>
       <button class="auth-btn secondary" id="authGuestBtn" style="display:none">Continuer sans compte (démo)</button>
     </div>
-    <div class="auth-footer">
-      ✅ 100% gratuit & offline — Tes données restent dans ton navigateur, aucun serveur.<br/>
+    
+<div id="emailConfigBanner" style="margin:12px 20px 0;padding:10px 12px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);font-size:0.75rem;line-height:1.4;display:block">
+  <strong>⚙️ Config e-mail requise:</strong> Ouvre ce fichier et remplace <code>TON_PUBLIC_KEY_EMAILJS</code> etc. dans <code>EMAIL_CONFIG</code>.<br/>
+  <span style="opacity:0.8">Voir <code>backend_email/README.md</code> pour le backend Nodemailer.</span>
+  <button onclick="this.parentElement.style.display='none'" style="float:right;background:transparent;border:1px solid var(--border);border-radius:6px;padding:2px 6px;cursor:pointer">✕</button>
+</div>
+
+<div class="auth-footer">
+      🔒 Tes données restent dans ton navigateur.<br/>
       En prod, remplace par un vrai backend e-mail.<br/>
       <span id="authFooterInfo"></span>
     </div>
@@ -3937,7 +3955,7 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
       </div>
       
       <div class="demo-code-box" id="demoCodeBox">
-        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">✅ MODE GRATUIT - Code généré localement (0€, sans e-mail)</div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">🔧 MODE DÉMO - Code affiché ici (en prod: envoyé par e-mail réel)</div>
         <div class="demo-code" id="demoCodeDisplay">------</div>
         <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Expire dans <span id="codeExpireTimer">10:00</span></div>
       </div>
@@ -4053,35 +4071,102 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
     return map[email?.toLowerCase()] || null;
   }
   
-  
-  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
-  const FREE_MODE = {
-    enabled: true,
-    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
-    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
-    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
-    allowGuest: false
+  // ===== CONFIGURATION E-MAIL RÉEL =====
+  const EMAIL_CONFIG = {
+    // Choisis ton mode: 'emailjs' ou 'backend' ou 'both'
+    mode: 'both', // 'emailjs' = uniquement EmailJS, 'backend' = API perso, 'both' = essaie backend puis EmailJS
+    emailjs: {
+      enabled: true,
+      publicKey: 'TON_PUBLIC_KEY_EMAILJS', // ex: 'abc123XYZ'
+      serviceId: 'TON_SERVICE_ID', // ex: 'service_mistral'
+      templateId: 'TON_TEMPLATE_ID' // ex: 'template_code'
+    },
+    backend: {
+      enabled: true,
+      endpoint: '/api/send-code' // ou 'https://ton-api.com/api/send-code'
+    }
   };
-
   
-  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
-  const FREE_MODE = {
-    enabled: true,
-    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
-    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
-    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
-    allowGuest: false
-  };
+  // Initialise EmailJS si dispo
+  try{
+    if(typeof emailjs !== 'undefined' && EMAIL_CONFIG.emailjs.publicKey !== 'TON_PUBLIC_KEY_EMAILJS'){
+      emailjs.init(EMAIL_CONFIG.emailjs.publicKey);
+    }
+  }catch(e){ console.warn('EmailJS init failed', e); }
 
+  // Envoi réel
   async function sendEmailCode(email, code, purpose){
-    // MODE GRATUIT : pas d'envoi e-mail, code généré localement et affiché dans l'UI
-    console.log(`[GRATUIT] Code ${purpose}: ${code} -> ${email} (affiché localement, 0€)`);
-    // On simule un petit délai réseau pour le réalisme
-    await new Promise(r=>setTimeout(r, 350));
-    return true;
+    console.log(`[EMAIL] Envoi code ${purpose}: ${code} -> ${email}`);
+    let sent = false;
+    let lastError = null;
+
+    // 1) Essaie backend perso (Nodemailer / Resend / etc)
+    if((EMAIL_CONFIG.mode==='backend' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.backend.enabled){
+      try{
+        const res = await fetch(EMAIL_CONFIG.backend.endpoint, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, code, purpose, timestamp: Date.now()})
+        });
+        if(res.ok){
+          const data = await res.json().catch(()=>({}));
+          console.log('[EMAIL] Backend OK', data);
+          sent = true;
+          return true;
+        }else{
+          const txt = await res.text();
+          throw new Error(`Backend ${res.status}: ${txt}`);
+        }
+      }catch(e){
+        console.warn('[EMAIL] Backend failed, fallback EmailJS', e);
+        lastError = e;
+        if(EMAIL_CONFIG.mode==='backend') throw e;
+      }
+    }
+
+    // 2) Fallback / principal EmailJS (sans backend)
+    if((EMAIL_CONFIG.mode==='emailjs' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.emailjs.enabled){
+      try{
+        if(EMAIL_CONFIG.emailjs.publicKey === 'TON_PUBLIC_KEY_EMAILJS'){
+          console.warn('[EMAIL] EmailJS non configuré, mode démo');
+          // mode démo - on affiche quand même le code
+          return true;
+        }
+        if(typeof emailjs === 'undefined'){
+          throw new Error('EmailJS SDK non chargé');
+        }
+        const templateParams = {
+          to_email: email,
+          to_name: email.split('@')[0],
+          code: code,
+          purpose: purpose==='api_access' ? 'Accès clé API' : 'Vérification de compte',
+          purpose_detail: purpose,
+          expiry_minutes: 10
+        };
+        const result = await emailjs.send(
+          EMAIL_CONFIG.emailjs.serviceId,
+          EMAIL_CONFIG.emailjs.templateId,
+          templateParams
+        );
+        console.log('[EMAIL] EmailJS OK', result.status);
+        sent = true;
+        return true;
+      }catch(e){
+        console.error('[EMAIL] EmailJS failed', e);
+        lastError = e;
+      }
+    }
+
+    if(!sent){
+      // En dev, on ne bloque pas - on laisse passer en mode démo pour ne pas bloquer l'utilisateur
+      if(location.hostname==='localhost' || location.hostname==='127.0.0.1' || EMAIL_CONFIG.emailjs.publicKey==='TON_PUBLIC_KEY_EMAILJS'){
+        console.warn('[EMAIL] Mode démo activé - code affiché dans UI');
+        return true;
+      }
+      throw lastError || new Error('Envoi e-mail échoué');
+    }
+    return sent;
   }
-
-
   
   // UI Elements
   const authOverlay = document.getElementById('authOverlay');
@@ -4556,76 +4641,6 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
   
   // Expose for debugging
   window.__auth = {getUsers, getCurrentUser, isApiAccessValid, openAuthOverlay, openKeyPanelSecure};
-})();
-</script>
-
-
-<script>
-// === GESTION GRATUITE BONUS ===
-(function(){
-  // Ajoute export/import dans le menu utilisateur
-  window.addEventListener('load', ()=>{
-    setTimeout(()=>{
-      const menuBody = document.querySelector('.user-menu-body');
-      if(!menuBody) return;
-      // Ajoute section gestion gratuite si pas déjà là
-      if(document.getElementById('freeManageSection')) return;
-      const section = document.createElement('div');
-      section.id='freeManageSection';
-      section.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:6px';
-      section.innerHTML=`
-        <div class="user-menu-divider"></div>
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">Gestion gratuite</div>
-        <button class="user-menu-item" id="freeExportBtn"><span>💾</span><span>Exporter mes comptes (JSON)</span></button>
-        <button class="user-menu-item" id="freeImportBtn"><span>📥</span><span>Importer comptes</span></button>
-        <button class="user-menu-item" id="freeClearBtn" style="background:rgba(239,68,68,0.06)"><span>🗑️</span><span>Tout effacer (local)</span></button>
-        <div style="font-size:0.68rem;color:var(--text-muted);padding:4px 2px;line-height:1.3">✅ 0€ • Offline • Chiffré SHA-256 • Stockage local uniquement</div>
-      `;
-      const loggedSection = document.getElementById('userMenuLoggedSection');
-      if(loggedSection) loggedSection.appendChild(section);
-      
-      document.getElementById('freeExportBtn')?.addEventListener('click', ()=>{
-        const users = JSON.parse(localStorage.getItem('app_auth_users_v2')||'[]');
-        const data = {users, exportDate: new Date().toISOString(), version:'free-v1'};
-        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download=`comptes-gratuits-${new Date().toISOString().slice(0,10)}.json`; a.click();
-        URL.revokeObjectURL(url);
-      });
-      document.getElementById('freeImportBtn')?.addEventListener('click', ()=>{
-        const input = document.createElement('input'); input.type='file'; input.accept='.json';
-        input.onchange = (e)=>{
-          const file = e.target.files[0]; if(!file) return;
-          const reader = new FileReader();
-          reader.onload = (ev)=>{
-            try{
-              const data = JSON.parse(ev.target.result);
-              if(data.users && Array.isArray(data.users)){
-                if(confirm(`Importer ${data.users.length} comptes ? (écrase existants)`)){
-                  localStorage.setItem('app_auth_users_v2', JSON.stringify(data.users));
-                  alert('Importé ✅ Recharge la page');
-                  location.reload();
-                }
-              }else alert('Fichier invalide');
-            }catch(err){ alert('Erreur: '+err.message); }
-          };
-          reader.readAsText(file);
-        };
-        input.click();
-      });
-      document.getElementById('freeClearBtn')?.addEventListener('click', ()=>{
-        if(confirm('Tout effacer ? Comptes + clé API + sessions. Irréversible en local.')){
-          localStorage.removeItem('app_auth_users_v2');
-          localStorage.removeItem('app_auth_current_v2');
-          localStorage.removeItem('app_auth_pending_v2');
-          localStorage.removeItem('app_auth_api_verified_v2');
-          localStorage.removeItem('mistral_api_key');
-          alert('Effacé ✅');
-          location.reload();
-        }
-      });
-    }, 800);
-  });
 })();
 </script>
 
