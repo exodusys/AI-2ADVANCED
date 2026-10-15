@@ -2033,40 +2033,38 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <button id="agentCreateBtn" class="icon-square" title="Créer un agent IA" style="width:44px; height:44px; flex-shrink:0;">💼</button>
     <div id="futureLogoSlot" style="width:44px; height:44px; flex-shrink:0;" aria-hidden="true" title="Espace réservé futur logo"></div>
   </div>
-  <!-- LIGNE BAS : effacer + enregistrer + discussion + menu + localisation -->
+  <!-- LIGNE BAS : effacer + enregistrer + discussion + menu - même taille que haut -->
   <div class="header-bottom">
     <button class="btn secondary" id="clearBtn" style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.875rem; font-weight:600; border-radius:10px;">Effacer</button>
     <button class="btn secondary" id="saveBtn" style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.875rem; font-weight:600; border-radius:10px;">Enregistrer</button>
-    <button id="locationBtn" class="icon-square" title="Partager ma position précise pour l'IA" style="width:44px; height:44px; flex-shrink:0; background:var(--surface-2);border:1px solid var(--border); position:relative;">📍</button>
     <button id="historyBtn" class="icon-square" title="Discussions sauvegardées" style="width:44px; height:44px; flex-shrink:0;">💬</button>
     <button id="burgerBtn" class="icon-square" title="Menu" style="width:44px; height:44px; flex-shrink:0; background:var(--surface-2);border:1px solid var(--border)">☰</button>
   </div>
-  <div id="locationBadge" style="display:none; margin:6px 0 2px; padding:6px 10px; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.75rem; color:#166534; display:flex; align-items:center; gap:6px; justify-content:space-between;">
+
+  <div id="locationBadge" style="display:none; margin:6px 0 2px; padding:8px 12px; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.78rem; color:#166534; align-items:center; gap:6px; justify-content:space-between;">
     <span id="locationBadgeText">📍 Position active</span>
-    <button id="locationBadgeClear" style="background:none;border:none;cursor:pointer;font-size:0.8rem;">✕</button>
+    <button id="locationBadgeClear" style="background:none;border:none;cursor:pointer;font-size:0.9rem;">✕</button>
   </div>
 
+
 <style>
-.loc-overlay{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,0.55);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:16px}
+/* 📍 Loc panel - même hauteur que Modèles Mistral */
+.loc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.58);backdrop-filter:blur(14px);display:flex;align-items:flex-start;justify-content:center;padding-top:20px;padding-bottom:20px;padding-left:12px;padding-right:12px;overflow-y:auto;overscroll-behavior:contain;z-index:83}
 .loc-overlay[hidden]{display:none !important}
-.loc-panel{width:100%;max-width:520px;background:var(--bg, #fff);border:1px solid var(--border);border-radius:24px;box-shadow:0 32px 80px -16px rgba(15,23,42,0.3),0 8px 24px -8px rgba(15,23,42,0.15);overflow:hidden;animation:locIn 0.25s ease}
-@keyframes locIn{from{opacity:0;transform:translateY(10px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.loc-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-weight:700;font-size:1rem}
-.loc-close{width:32px;height:32px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer}
-.loc-body{padding:20px}
-.loc-footer{padding:12px;border-top:1px solid var(--border)}
+.loc-panel{width:min(560px,calc(100vw - 24px)) !important;background:var(--surface-solid);border:1px solid var(--border);border-radius:18px !important;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;max-height:min(88vh,760px) !important;margin:auto 0 !important;animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1)}
+.loc-body{overflow-y:auto !important;flex:1 1 auto !important;min-height:0 !important;-webkit-overflow-scrolling:touch !important}
 .loc-result-card{background:var(--surface, #f8fafc);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .loc-result-row{display:flex;justify-content:space-between;gap:12px;font-size:0.85rem}
 .loc-result-label{font-weight:600;color:var(--text-muted);text-transform:uppercase;font-size:0.7rem;letter-spacing:0.5px}
-.loc-result-value{font-weight:600;color:var(--text);text-align:right}
-.loc-status-error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#991b1b;border-radius:14px;padding:12px;font-size:0.85rem;line-height:1.5}
+.loc-result-value{font-weight:600;color:var(--text);text-align:right;max-width:65%;overflow:hidden;text-overflow:ellipsis}
+.loc-status-error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#991b1b;border-radius:14px;padding:12px;font-size:0.85rem;line-height:1.5;white-space:pre-line}
 .loc-status-success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#166534;border-radius:14px;padding:12px;font-size:0.85rem}
 .loc-status-loading{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;font-size:0.85rem}
-#locationBtn.active{border-color:#22c55e !important; box-shadow:0 0 0 2px rgba(34,197,94,0.2); background:rgba(34,197,94,0.12) !important}
-#locationBtn.loading{animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 #locationBadge{display:none}
 #locationBadge.active{display:flex !important}
+@media (max-width:600px){
+  .loc-panel{width:calc(100vw - 16px) !important;max-height:calc(100dvh - 16px) !important;border-radius:14px !important;margin:0 auto !important}
+}
 </style>
 
 </header>
@@ -2094,31 +2092,35 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 </div>
 
 
-<!-- Location overlay - Ma Position Exacte -->
-<div class="loc-overlay" id="locOverlay" hidden>
-  <div class="loc-panel">
-    <div class="loc-header"><span>📍 Ma Position Exacte</span><button type="button" id="locClose" class="loc-close">✕</button></div>
-    <div class="loc-body" id="locBody">
-      <div class="loc-intro">
-        <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">Obtenez votre adresse complète en un clic : rue, numéro, ville et code postal. L'IA utilisera automatiquement votre position pour les demandes locales (météo, restos, itinéraires, etc.).</p>
+<!-- Location overlay - style identique à Modèles Mistral -->
+<div class="model-overlay loc-overlay" id="locOverlay" hidden>
+  <div class="model-panel loc-panel">
+    <div class="model-header loc-header">
+      <span>📍 Ma Position Exacte</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" id="locClose" class="model-close">✕</button>
+      </div>
+    </div>
+    <div class="model-list loc-body" id="locBody" style="padding:14px; display:flex; flex-direction:column; gap:12px;">
+      <div class="loc-intro" style="padding:4px 4px 0;">
+        <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5;">Obtenez votre adresse complète en un clic. L'IA utilisera automatiquement votre position pour les demandes locales (météo, restos, itinéraires...).</p>
       </div>
       <button type="button" id="locActionBtn" class="btn" style="width:100%; height:52px; font-weight:700; font-size:1rem; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;">📍 Localiser ma position précise</button>
-      <div id="locStatus" style="margin-top:16px; display:none;"></div>
-      <div id="locResult" style="margin-top:16px; display:none;"></div>
-      <div class="loc-privacy" style="margin-top:20px; padding:12px; background:var(--surface-2); border-radius:12px; font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+      <div id="locStatus" style="display:none;"></div>
+      <div id="locResult" style="display:none;"></div>
+      <div class="loc-privacy" style="padding:10px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; font-size:0.72rem; color:var(--text-muted); line-height:1.4;">
         <div style="font-weight:700; margin-bottom:4px; color:var(--text);">🔒 Confidentialité</div>
-        • 100% privé • Aucune clé API • Données stockées uniquement dans votre navigateur<br/>
+        • 100% privé • Sans clé API • Stocké uniquement dans votre navigateur<br/>
         • Via OpenStreetMap Nominatim + fallback BigDataCloud<br/>
         • L'IA ne reçoit votre position que si vous l'activez
       </div>
     </div>
-    <div class="loc-footer" style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);">
-      <button type="button" id="locCopyBtn" class="btn secondary" style="flex:1; display:none;">📋 Copier l'adresse</button>
+    <div class="model-footer loc-footer" style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);">
+      <button type="button" id="locCopyBtn" class="btn secondary" style="flex:1; display:none;">📋 Copier</button>
       <button type="button" id="locClearBtn" class="btn secondary" style="flex:1; display:none; color:#ef4444; background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2);">🗑️ Effacer</button>
     </div>
   </div>
 </div>
-
 
 
 <!-- Fond principal IA/Informatique selector -->
@@ -2592,18 +2594,23 @@ function loadActiveAgentId(){return localStorage.getItem(ACTIVE_AGENT_KEY);}
 function saveActiveAgentId(id){if(id) localStorage.setItem(ACTIVE_AGENT_KEY,id); else localStorage.removeItem(ACTIVE_AGENT_KEY);}
 agents=loadAgents(); activeAgentId=loadActiveAgentId();
 
-// ========== 📍 MODULE LOCALISATION (issu de Loc.html) ==========
+// ========== 📍 MODULE LOCALISATION v2 (issu de Loc.html) ==========
 const LOCATION_KEY = 'mistral_user_location';
 const LOCATION_ENABLED_KEY = 'mistral_location_enabled';
-let userLocation = null; // {lat, lon, accuracy, adresseComplete, rue, numero, ville, codePostal, pays, quartier, timestamp}
-let locationStatus = 'idle'; // idle, loading, success, error
+let userLocation = null;
+let locationStatus = 'idle';
 let locationErrorMsg = '';
 let locationEnabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
 
 function loadLocation(){
   try{
     const raw = localStorage.getItem(LOCATION_KEY);
-    if(raw){ userLocation = JSON.parse(raw); locationStatus = 'success'; locationEnabled = true; }
+    if(raw){ 
+      userLocation = JSON.parse(raw); 
+      locationStatus = 'success'; 
+      locationEnabled = true;
+      localStorage.setItem(LOCATION_ENABLED_KEY,'true');
+    }
   }catch{}
 }
 function saveLocation(loc){
@@ -2625,7 +2632,6 @@ function clearLocationData(){
 }
 
 async function reverseGeocode(lat, lon){
-  // Fonction Sm de Loc.html - Nominatim + fallback BigDataCloud
   const controller = new AbortController();
   const timeout = setTimeout(()=>controller.abort(), 8000);
   try{
@@ -2642,17 +2648,8 @@ async function reverseGeocode(lat, lon){
     const pays = addr.country||'';
     const quartier = addr.suburb||addr.neighbourhood||addr.quarter||'';
     const display = data.display_name || [numero, rue, codePostal && ville ? `${codePostal} ${ville}` : ville, pays].filter(Boolean).join(', ');
-    return {
-      rue: rue || 'Non disponible',
-      numero: numero || 'Non disponible',
-      ville: ville || 'Non disponible',
-      codePostal: codePostal || 'Non disponible',
-      pays: pays || 'Non disponible',
-      quartier: quartier || '',
-      adresseComplete: display || `${lat.toFixed(5)}, ${lon.toFixed(5)}`
-    };
+    return {rue: rue||'Non disponible', numero: numero||'Non disponible', ville: ville||'Non disponible', codePostal: codePostal||'Non disponible', pays: pays||'Non disponible', quartier: quartier||'', adresseComplete: display||`${lat.toFixed(5)}, ${lon.toFixed(5)}`};
   }catch(e){
-    // Fallback BigDataCloud
     try{
       const ctrl2 = new AbortController();
       const t2 = setTimeout(()=>ctrl2.abort(), 6000);
@@ -2666,25 +2663,11 @@ async function reverseGeocode(lat, lon){
       const codePostal = j.postcode||'';
       const pays = j.countryName||'';
       const adresse = [j.street ? `${j.street}` : '', codePostal && ville ? `${codePostal} ${ville}` : ville, pays].filter(Boolean).join(', ');
-      return {
-        rue: rue || 'Non disponible',
-        numero: 'Non disponible — service fallback sans numéro',
-        ville: ville || 'Non disponible',
-        codePostal: codePostal || 'Non disponible',
-        pays: pays || 'Non disponible',
-        quartier: '',
-        adresseComplete: adresse || `${lat.toFixed(5)}, ${lon.toFixed(5)}`
-      };
+      return {rue: rue||'Non disponible', numero: 'Non disponible — fallback sans numéro', ville: ville||'Non disponible', codePostal: codePostal||'Non disponible', pays: pays||'Non disponible', quartier: '', adresseComplete: adresse||`${lat.toFixed(5)}, ${lon.toFixed(5)}`};
     }catch{
       throw new Error(e?.message||'Service de géocodage temporairement indisponible');
     }
   }
-}
-
-function isLocationSupported(){
-  const secure = typeof window !== 'undefined' ? window.isSecureContext : true;
-  const hasGeo = typeof navigator !== 'undefined' && 'geolocation' in navigator;
-  return {secure, hasGeo, ok: hasGeo && (secure || window.location.hostname==='localhost')};
 }
 
 function getCurrentPositionPromise(){
@@ -2695,49 +2678,35 @@ function getCurrentPositionPromise(){
 }
 
 async function requestLocation(){
-  const check = isLocationSupported();
-  if(!check.hasGeo){
-    locationStatus='error'; locationErrorMsg='Géolocalisation non supportée par ce navigateur.';
+  const hasGeo = typeof navigator !== 'undefined' && 'geolocation' in navigator;
+  const secure = typeof window !== 'undefined' ? window.isSecureContext : false;
+  if(!hasGeo){
+    locationStatus='error'; locationErrorMsg='Géolocalisation non supportée par ce navigateur.\nEssayez Chrome, Firefox, Safari récent.';
     updateLocationUI(); renderLocPanel(); return;
   }
-  if(!check.secure && window.location.hostname!=='localhost'){
-    locationStatus='error'; locationErrorMsg='Connexion non sécurisée — la géolocalisation nécessite HTTPS.';
+  if(!secure && window.location.hostname!=='localhost'){
+    locationStatus='error'; locationErrorMsg='Connexion non sécurisée — la géolocalisation nécessite HTTPS.\nServez le fichier en https:// ou utilisez localhost.';
     updateLocationUI(); renderLocPanel(); return;
   }
   locationStatus='loading'; locationErrorMsg=''; updateLocationUI(); renderLocPanel();
   try{
     const pos = await getCurrentPositionPromise();
     const coords = {lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy};
-    // Reverse geocode
     const addr = await reverseGeocode(coords.lat, coords.lon);
-    const full = {
-      ...coords,
-      ...addr,
-      timestamp: Date.now(),
-      source: 'navigator.geolocation + nominatim'
-    };
+    const full = {...coords, ...addr, timestamp: Date.now(), source: 'navigator.geolocation + nominatim'};
     saveLocation(full);
     locationStatus='success';
     updateLocationUI(); renderLocPanel();
     const sh=document.getElementById('statusHint');
-    if(sh){ sh.textContent=`📍 Position: ${full.adresseComplete.slice(0,60)}`; sh.style.display='block'; setTimeout(()=>sh.style.display='none',4000); }
+    if(sh){ sh.textContent=`📍 Position: ${full.adresseComplete.slice(0,70)}`; sh.style.display='block'; setTimeout(()=>sh.style.display='none',4500); }
   }catch(err){
     locationStatus='error';
     let msg = err.message||'Erreur inconnue';
-    let help='';
-    if(err.code===1 || msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('refus')){
-      locationErrorMsg='Accès à la position refusé';
-      help = `iPhone: Réglages > Confidentialité > Service de localisation > Safari > Autoriser\nAndroid: cadenas > Paramètres du site > Position > Autoriser\nOrdi: icône 📍/cadenas dans la barre d'adresse > Autoriser`;
-    }else if(err.code===2){
-      locationErrorMsg='Position indisponible';
-      help='Activez le GPS, sortez à l\'extérieur ou près d\'une fenêtre.';
-    }else if(err.code===3){
-      locationErrorMsg='Délai dépassé (15s)';
-      help='Améliorez le signal GPS, activez le Wi-Fi.';
-    }else{
-      locationErrorMsg=msg;
-    }
-    if(help) locationErrorMsg += '\n'+help;
+    if(err.code===1) msg='Accès à la position refusé\nVous avez refusé l\'autorisation.';
+    else if(err.code===2) msg='Position indisponible\nActivez le GPS, sortez à l\'extérieur.';
+    else if(err.code===3) msg='Délai dépassé (15s)\nAméliorez le signal GPS, activez le Wi-Fi.';
+    if(err.message && err.message.toLowerCase().includes('denied')) msg='Accès à la position refusé\nAutorisez dans le cadenas de la barre d\'adresse.';
+    locationErrorMsg=msg;
     updateLocationUI(); renderLocPanel();
   }
 }
@@ -2745,9 +2714,9 @@ async function requestLocation(){
 function formatLocationForAI(){
   if(!userLocation || !locationEnabled) return null;
   const ageMin = Math.round((Date.now()-userLocation.timestamp)/60000);
-  const freshness = ageMin<2 ? 'à l\'instant' : ageMin<60 ? `il y a ${ageMin} min` : `il y a ${Math.round(ageMin/60)}h`;
+  const freshness = ageMin<2 ? "à l'instant" : ageMin<60 ? `il y a ${ageMin} min` : `il y a ${Math.round(ageMin/60)}h`;
   return `[Contexte Localisation Utilisateur - UTILISE-LE SEULEMENT SI LA QUESTION NÉCESSITE LA POSITION]
-L'utilisateur a activé le partage de position précise pour améliorer la pertinence de l'IA.
+L'utilisateur a activé le partage de position précise.
 
 - Adresse complète: ${userLocation.adresseComplete}
 - Rue: ${userLocation.rue}
@@ -2761,32 +2730,32 @@ ${userLocation.quartier ? `- Quartier: ${userLocation.quartier}` : ''}
 - Fraîcheur: ${freshness} (${new Date(userLocation.timestamp).toLocaleString('fr-CH')})
 - Source: ${userLocation.source}
 
-Consignes pour l'IA:
-- Utilise cette position pour les demandes locales: météo, restaurants, commerces, itinéraires, horaires, "autour de moi", "près de moi", etc.
-- Ne révèle JAMAIS les coordonnées brutes lat/lon sauf si l'utilisateur le demande explicitement. Préfère l'adresse lisible.
-- Si la demande n'est pas locale, IGNORE ce contexte.
-- Si l'utilisateur demande "où suis-je", donne l'adresse complète.
+Consignes:
+- Utilise pour: météo, restaurants, commerces, itinéraires, horaires, "autour de moi", "près de moi", etc.
+- Ne révèle JAMAIS lat/lon sauf demande explicite. Préfère adresse lisible.
+- Si question non locale, IGNORE ce contexte.
 `;
 }
 
 function updateLocationUI(){
-  const btn=document.getElementById('locationBtn');
   const badge=document.getElementById('locationBadge');
   const badgeText=document.getElementById('locationBadgeText');
-  if(btn){
-    btn.classList.remove('active','loading');
-    if(locationStatus==='loading'){ btn.classList.add('loading'); btn.textContent='⏳'; }
-    else if(locationStatus==='success' && locationEnabled && userLocation){ btn.classList.add('active'); btn.textContent='📍'; btn.title=`Position active: ${userLocation.adresseComplete}`; }
-    else { btn.textContent='📍'; btn.title='Partager ma position précise pour l\'IA'; }
-  }
   if(badge){
     if(locationStatus==='success' && locationEnabled && userLocation){
       badge.classList.add('active');
       badge.style.display='flex';
-      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,45)} • ±${Math.round(userLocation.accuracy)}m`;
+      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m`;
     }else{
       badge.classList.remove('active');
       badge.style.display='none';
+    }
+  }
+  const btn = document.getElementById('burgerLocBtn');
+  if(btn){
+    if(locationStatus==='success' && locationEnabled){
+      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation ? userLocation.ville : ''}</span>`;
+    }else{
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Ma position précise</span>`;
     }
   }
 }
@@ -2809,14 +2778,16 @@ function renderLocPanel(){
     if(clearBtn) clearBtn.style.display='none';
   }else if(locationStatus==='loading'){
     statusEl.style.display='block';
-    statusEl.innerHTML=`<div class="loc-status-loading"><span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Recherche de votre position précise... (GPS haute précision, 15s max)<br/><span style="font-size:0.75rem;color:var(--text-muted)">Autorisez la localisation quand le navigateur le demande.</span></div>`;
+    statusEl.innerHTML=`<div class="loc-status-loading"><span>⏳</span><div><div style="font-weight:600;">Recherche de votre position précise...</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">GPS haute précision (15s max) — Autorisez quand le navigateur le demande.</div></div></div>`;
     resultEl.style.display='none';
     actionBtn.style.display='none';
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
   }else if(locationStatus==='error'){
     statusEl.style.display='block';
-    statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;margin-bottom:4px;">❌ ${locationErrorMsg.split('\n')[0]}</div><div style="white-space:pre-line;font-size:0.8rem;opacity:0.9;">${locationErrorMsg}</div></div>`;
+    const firstLine = locationErrorMsg.split('\n')[0];
+    const rest = locationErrorMsg.split('\n').slice(1).join('\n');
+    statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;margin-bottom:4px;">❌ ${firstLine}</div><div style="font-size:0.8rem;opacity:0.9;white-space:pre-line;">${rest}</div></div>`;
     resultEl.style.display='none';
     actionBtn.style.display='flex';
     actionBtn.textContent='🔄 Réessayer';
@@ -2825,11 +2796,11 @@ function renderLocPanel(){
     if(clearBtn) clearBtn.style.display='none';
   }else if(locationStatus==='success' && userLocation){
     statusEl.style.display='block';
-    statusEl.innerHTML=`<div class="loc-status-success">✅ Position obtenue avec une précision de ~${Math.round(userLocation.accuracy)}m</div>`;
+    statusEl.innerHTML=`<div class="loc-status-success">✅ Position obtenue avec ~${Math.round(userLocation.accuracy)}m de précision</div>`;
     resultEl.style.display='block';
     resultEl.innerHTML=`
       <div class="loc-result-card">
-        <div style="font-weight:700;font-size:0.9rem;margin-bottom:6px;">${userLocation.adresseComplete}</div>
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;line-height:1.3;">${userLocation.adresseComplete}</div>
         <div class="loc-result-row"><span class="loc-result-label">Rue</span><span class="loc-result-value">${userLocation.rue}</span></div>
         <div class="loc-result-row"><span class="loc-result-label">Numéro</span><span class="loc-result-value">${userLocation.numero}</span></div>
         <div class="loc-result-row"><span class="loc-result-label">Ville</span><span class="loc-result-value">${userLocation.ville}</span></div>
@@ -2860,9 +2831,8 @@ function openLocPanel(){
 }
 function closeLocPanel(){ const overlay=document.getElementById('locOverlay'); if(overlay) overlay.hidden=true; }
 
-// Initial load
 loadLocation();
-setTimeout(()=>{ updateLocationUI(); }, 200);
+setTimeout(()=>{ updateLocationUI(); }, 250);
 // ========== FIN MODULE LOCALISATION ==========
 
 function getActiveAgent(){return agents.find(a=>a.id===activeAgentId)||null;}
@@ -3774,11 +3744,11 @@ async function sendMessage(){
     const activeAgent=getActiveAgent();
     let messagesToSend=[];
     if(activeAgent && activeAgent.instructions) messagesToSend.push({role:'system', content:activeAgent.instructions});
-    // 📍 Injection localisation pour précision IA si activée
-    const locContext = typeof formatLocationForAI==='function' ? formatLocationForAI() : null;
-    if(locContext){
-      messagesToSend.push({role:'system', content: locContext});
-    }
+    // 📍 Contexte localisation pour précision IA
+    try{
+      const locContext = (typeof formatLocationForAI==='function') ? formatLocationForAI() : null;
+      if(locContext){ messagesToSend.push({role:'system', content: locContext}); }
+    }catch(e){ console.warn('loc context error', e); }
     messagesToSend=messagesToSend.concat(conversation);
     const response=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:MODEL,messages:messagesToSend,stream:true,temperature:0.7})});
     removeTyping();
@@ -3824,8 +3794,7 @@ burgerThemeBtn.addEventListener('click',()=>{
 });
 burgerKeyBtn.addEventListener('click',()=>{ closeBurgerMenu(); openKeyPanel(); });
 
-// 📍 Listeners localisation
-const locationBtn = document.getElementById('locationBtn');
+// 📍 Listeners panneau localisation (même pattern que modèles Mistral)
 const burgerLocBtn = document.getElementById('burgerLocBtn');
 const locOverlay = document.getElementById('locOverlay');
 const locClose = document.getElementById('locClose');
@@ -3834,74 +3803,39 @@ const locCopyBtn = document.getElementById('locCopyBtn');
 const locClearBtn = document.getElementById('locClearBtn');
 const locationBadgeClear = document.getElementById('locationBadgeClear');
 
-if(locationBtn){
-  locationBtn.addEventListener('click', ()=>{
-    if(locationStatus==='success' && userLocation){
-      openLocPanel();
-    }else{
-      openLocPanel();
-      // auto lance si pas encore de pos
-      if(locationStatus!=='loading' && locationStatus!=='success'){
-        setTimeout(()=>requestLocation(), 300);
-      }
-    }
-  });
+if(burgerLocBtn){ 
+  burgerLocBtn.addEventListener('click', ()=>{ 
+    if(typeof openLocPanel==='function') openLocPanel(); 
+  }); 
 }
-if(burgerLocBtn){ burgerLocBtn.addEventListener('click', ()=>{ openLocPanel(); }); }
-if(locClose){ locClose.addEventListener('click', closeLocPanel); }
-if(locOverlay){ locOverlay.addEventListener('click', (e)=>{ if(e.target===locOverlay) closeLocPanel(); }); }
-if(locActionBtn){ locActionBtn.addEventListener('click', requestLocation); }
+if(locClose){ locClose.addEventListener('click', ()=>{ if(typeof closeLocPanel==='function') closeLocPanel(); }); }
+if(locOverlay){ locOverlay.addEventListener('click', (e)=>{ if(e.target===locOverlay && typeof closeLocPanel==='function') closeLocPanel(); }); }
+if(locActionBtn){ locActionBtn.addEventListener('click', ()=>{ if(typeof requestLocation==='function') requestLocation(); }); }
 if(locCopyBtn){
   locCopyBtn.addEventListener('click', async ()=>{
     if(!userLocation) return;
     try{
       await navigator.clipboard.writeText(userLocation.adresseComplete);
-      const old = locCopyBtn.textContent;
-      locCopyBtn.textContent='✅ Copié';
-      setTimeout(()=>locCopyBtn.textContent=old, 2000);
+      const old = locCopyBtn.textContent; locCopyBtn.textContent='✅ Copié'; setTimeout(()=>locCopyBtn.textContent=old, 2000);
     }catch{
       const ta=document.createElement('textarea'); ta.value=userLocation.adresseComplete; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      const old = locCopyBtn.textContent; locCopyBtn.textContent='✅ Copié'; setTimeout(()=>locCopyBtn.textContent=old, 2000);
     }
   });
 }
 if(locClearBtn){
   locClearBtn.addEventListener('click', ()=>{
     if(confirm('Effacer votre position enregistrée ? L\'IA n\'aura plus accès à votre localisation.')){
-      clearLocationData();
-      closeLocPanel();
+      if(typeof clearLocationData==='function') clearLocationData();
+      if(typeof closeLocPanel==='function') closeLocPanel();
     }
   });
 }
 if(locationBadgeClear){
   locationBadgeClear.addEventListener('click', ()=>{
-    clearLocationData();
+    if(typeof clearLocationData==='function') clearLocationData();
   });
 }
-
-// Détection automatique de requêtes locales pour suggérer l'activation
-function isLocalQuery(text){
-  const t = text.toLowerCase();
-  const keywords = ['autour de moi','près de moi','proche de moi','à proximité','où est','ou est','adresse','restaurant','resto','magasin','pharmacie','météo','meteo','itinéraire','itineraire','comment aller','horaire','ouvert','fermé','distance','km de moi','lausanne','genève','suisse'];
-  return keywords.some(k=>t.includes(k));
-}
-// Intercepte avant envoi pour suggérer activation si besoin (non bloquant)
-const _originalSendMessage = sendMessage;
-async function sendMessageWithLocationCheck(){
-  const raw = document.getElementById('userInput')?.value?.trim()||'';
-  if(raw && isLocalQuery(raw) && locationStatus!=='success' && locationStatus!=='loading'){
-    const sh=document.getElementById('statusHint');
-    if(sh){ sh.innerHTML='💡 <b>Astuce:</b> Activez 📍 pour une réponse ultra-précise <button onclick="openLocPanel()" style="margin-left:6px;background:#0F172A;color:#fff;border:none;padding:2px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem;">Activer</button>'; sh.style.display='block'; setTimeout(()=>{ if(sh.innerHTML.includes('Astuce')) sh.style.display='none'; }, 6000); }
-  }
-  return _originalSendMessage();
-}
-// Remplace sendMessage par version avec check
-if(typeof window!=='undefined'){ window._origSendMessage = _originalSendMessage; }
-// On réassigne la fonction globale sendMessage en gardant le nom
-// Pour cela on écrase la définition plus haut via assignation
-
-// Override sendMessage pour check localisation
-const __origSend = sendMessage;
-async function sendMessage(){ const raw=document.getElementById('userInput')?.value?.trim()||''; if(raw && typeof isLocalQuery==='function' && isLocalQuery(raw) && locationStatus!=='success' && locationStatus!=='loading' && !locationEnabled){ /* suggestion non bloquante déjà gérée */ } return __origSend(); }
 
 
 const burgerVortexBtn=document.getElementById('burgerVortexBtn');
