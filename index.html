@@ -2059,7 +2059,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <button class="btn secondary" id="clearBtn" style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.875rem; font-weight:600; border-radius:10px;">Effacer</button>
     <button class="btn secondary" id="saveBtn" style="flex:1; height:44px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.875rem; font-weight:600; border-radius:10px;">Enregistrer</button>
     <button id="historyBtn" class="icon-square" title="Discussions sauvegardées" style="width:44px; height:44px; flex-shrink:0;">💬</button>
-    <button id="burgerBtn" class="icon-square" title="Menu" style="width:44px; height:44px; flex-shrink:0; background:var(--surface-2);border:1px solid var(--border)">☰</button>
+    <button id="burgerBtn" class="icon-square" title="Menu" style="width:44px; height:44px; flex-shrink:0; background:var(--surface-2);border:1px solid var(--border); position:relative; overflow:visible;">☰<span id="locPastille" class="loc-pastille off" title="Localisation OFF"></span></button>
   </div>
 
   <div id="locationBadge" style="display:none; margin:6px 0 2px; padding:8px 12px; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.78rem; color:#166534; align-items:center; gap:6px; justify-content:space-between;">
@@ -2082,7 +2082,18 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 .loc-status-success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#166534;border-radius:14px;padding:12px;font-size:0.85rem}
 .loc-status-loading{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;font-size:0.85rem}
 #locationBadge{display:none}
-#locationBadge.active{display:flex !important}
+/* Badge vert sous header supprimé - remplacé par pastille hamburger */
+#locationBadge{display:none !important}
+#locationBadge.active{display:none !important}
+  /* Pastille sur icône hamburger - état localisation */
+  #burgerBtn{position:relative; overflow:visible !important;}
+  .loc-pastille{position:absolute; top:-3px; right:-3px; width:13px; height:13px; border-radius:50%; border:2.5px solid var(--surface-solid, #fff); display:block; z-index:2; transition:all 0.25s; box-sizing:border-box;}
+  .loc-pastille.on{background:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,0.15), 0 0 8px rgba(34,197,94,0.5);}
+  .loc-pastille.off{background:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,0.15), 0 0 8px rgba(239,68,68,0.5);}
+  .loc-pastille.idle{background:#f59e0b; box-shadow:0 0 0 2px rgba(245,158,11,0.15);}
+  .loc-pastille.loading{background:#3b82f6; animation: pastillePulse 1.2s ease-in-out infinite;}
+  @keyframes pastillePulse{0%,100%{transform:scale(1); opacity:1}50%{transform:scale(1.2); opacity:0.8}}
+
   /* Toggle Service Localisation */
   .loc-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;transition:all 0.2s}
   .loc-toggle-row.active{border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.08)}
@@ -2871,18 +2882,34 @@ Consignes:
 }
 
 function updateLocationUI(){
+  // Badge vert supprimé - on ne l'affiche plus (remplacé par pastille hamburger)
   const badge=document.getElementById('locationBadge');
-  const badgeText=document.getElementById('locationBadgeText');
-  if(badge){
-    if(locationStatus==='success' && locationEnabled && userLocation){
-      badge.classList.add('active');
-      badge.style.display='flex';
-      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m`;
-    }else{
-      badge.classList.remove('active');
-      badge.style.display='none';
+  if(badge){ badge.classList.remove('active'); badge.style.display='none'; }
+
+  // Pastille sur hamburger
+  const pastille=document.getElementById('locPastille');
+  const burgerBtn=document.getElementById('burgerBtn');
+  if(pastille){
+    pastille.className='loc-pastille'; // reset
+    if(locationStatus==='loading'){
+      pastille.classList.add('loading');
+      pastille.title='Localisation en cours...';
+      if(burgerBtn) burgerBtn.title='Menu — Localisation en cours...';
+    } else if(!locationEnabled){
+      pastille.classList.add('off');
+      pastille.title='Localisation OFF — le tchat ne peut pas accéder à ta position';
+      if(burgerBtn) burgerBtn.title='Menu — Localisation OFF';
+    } else if(locationEnabled && userLocation && locationStatus==='success'){
+      pastille.classList.add('on');
+      pastille.title=`Localisation ON — ${userLocation.ville} • ±${Math.round(userLocation.accuracy)}m`;
+      if(burgerBtn) burgerBtn.title=`Menu — Localisation ON : ${userLocation.ville}`;
+    } else if(locationEnabled){
+      pastille.classList.add('idle');
+      pastille.title='Localisation ON — pas de position enregistrée';
+      if(burgerBtn) burgerBtn.title='Menu — Localisation ON mais pas de position';
     }
   }
+
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
     if(locationEnabled && userLocation && locationStatus==='success'){
