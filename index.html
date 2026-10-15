@@ -2696,6 +2696,7 @@ async function requestLocation(){
     const full = {...coords, ...addr, timestamp: Date.now(), source: 'navigator.geolocation + nominatim'};
     saveLocation(full);
     locationStatus='success';
+    return full;
     updateLocationUI(); renderLocPanel();
     const sh=document.getElementById('statusHint');
     if(sh){ sh.textContent=`📍 Position: ${full.adresseComplete.slice(0,70)}`; sh.style.display='block'; setTimeout(()=>sh.style.display='none',4500); }
@@ -2830,6 +2831,72 @@ function openLocPanel(){
   if(typeof closeKeyPanel==='function') closeKeyPanel();
 }
 function closeLocPanel(){ const overlay=document.getElementById('locOverlay'); if(overlay) overlay.hidden=true; }
+
+
+function isLocalQuery(text){
+  if(!text) return false;
+  const t = text.toLowerCase();
+  const keywords = [
+    'autour de moi','près de moi','pres de moi','proche de moi','à proximité','a proximite',
+    'où est','ou est','où suis-je','ou suis je','ma position','mon adresse','mon emplacement',
+    'météo','meteo','temps qu\'il fait','temperature','température',
+    'restaurant','resto','café','cafe','bar','magasin','pharmacie','boulangerie','supermarché','supermarche',
+    'itinéraire','itineraire','comment aller','trajet','distance','combien de km','km de moi',
+    'horaire','ouvert','fermé','ferme','à quelle heure','a quelle heure',
+    'lausanne','genève','geneve','suisse','vaud','autour','proximité','proximite',
+    'ou manger','où manger','ou dormir','où dormir','parking','essence','hôpital','hopital'
+  ];
+  return keywords.some(k=>t.includes(k));
+}
+
+function getLocationAgeMinutes(){
+  if(!userLocation || !userLocation.timestamp) return Infinity;
+  return (Date.now() - userLocation.timestamp)/60000;
+}
+
+function shouldAutoRefreshForQuery(text){
+  if(!isLocalQuery(text)) return false;
+  const age = getLocationAgeMinutes();
+  // Si pas de loc, ou loc > 2 min, ou précision > 100m, on refresh
+  if(!userLocation) return true;
+  if(age > 2) return true;
+  if(userLocation.accuracy && userLocation.accuracy > 100) return true;
+  return false;
+}
+
+async function autoRefreshLocationIfNeeded(queryText, {force=false, showHint=true}={}){
+  const needs = force || shouldAutoRefreshForQuery(queryText);
+  if(!needs) return userLocation;
+  const sh = document.getElementById('statusHint');
+  try{
+    if(showHint && sh){
+      sh.innerHTML = '📍 <b>Actualisation de ta position pour plus de précision...</b> <span style="animation:spin 1s linear infinite;display:inline-block">⏳</span>';
+      sh.style.display='block';
+    }
+    const loc = await requestLocation();
+    if(showHint && sh){
+      sh.textContent = `📍 Position actualisée: ${userLocation ? userLocation.adresseComplete.slice(0,60) : 'OK'}`;
+      setTimeout(()=>{ if(sh.textContent.includes('actualisée')) sh.style.display='none'; }, 2500);
+    }
+    return loc;
+  }catch(e){
+    if(showHint && sh){
+      sh.textContent = '📍 Impossible d\'actualiser la position — vérifie les autorisations';
+      setTimeout(()=>{ sh.style.display='none'; }, 4000);
+    }
+    throw e;
+  }
+}
+
+// Background refresh si loc ancienne >10min, même sans requête locale
+function maybeBackgroundRefresh(){
+  if(!locationEnabled || !userLocation) return;
+  const age = getLocationAgeMinutes();
+  if(age > 10){
+    // refresh silencieux sans bloquer
+    requestLocation().catch(()=>{});
+  }
+}
 
 loadLocation();
 setTimeout(()=>{ updateLocationUI(); }, 250);
@@ -3730,6 +3797,27 @@ if(!SpeechRecognition){
 
 async function sendMessage(){
   const rawText=userInput.value.trim(); const apiKey=getApiKey();
+  // 📍 Auto-actualisation si requête locale
+  if(rawText){
+    try{
+      if(typeof isLocalQuery==='function' && isLocalQuery(rawText)){
+        const age = typeof getLocationAgeMinutes==='function' ? getLocationAgeMinutes() : Infinity;
+        if(!userLocation || age > 2 || (userLocation && userLocation.accuracy > 100)){
+          // On tente d'actualiser avant d'envoyer à l'IA pour précision maximale
+          if(typeof autoRefreshLocationIfNeeded==='function'){
+            await autoRefreshLocationIfNeeded(rawText, {showHint:true});
+          }
+        }
+      } else {
+        // Même si pas locale, refresh en background si >10min
+        if(typeof maybeBackgroundRefresh==='function') maybeBackgroundRefresh();
+      }
+    }catch(e){
+      console.warn('auto refresh loc error', e);
+      // On continue même si loc échoue
+    }
+  }
+
   if((!rawText && !attachedFile) || !apiKey){ if(!apiKey){ openKeyPanel(); return; } if(!rawText && !attachedFile) return; }
   if(isGenerating) return;
   let text=rawText; let displayText=rawText; let imgUrl=null;
