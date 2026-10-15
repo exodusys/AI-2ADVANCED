@@ -2075,7 +2075,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <div class="burger-header"><span>☰ Menu</span><button type="button" id="burgerClose" class="burger-close">✕</button></div>
     <div class="burger-list">
 <button type="button" class="burger-item" id="burgerThemeBtn"><span class="burger-icon" id="burgerThemeIcon">🌙</span><span id="burgerThemeLabel">Mode sombre / clair</span></button>
-      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon">📍</span><span>Service de localisation</span></button>
+      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon">📍</span><span>Ma position précise</span></button>
       <button type="button" class="burger-item" id="burgerKeyBtn"><span class="burger-icon">🔑</span><span>Clé API</span></button>
       <button type="button" class="burger-item" id="burgerVortexBtn"><span class="burger-icon">🌌</span><span>Vortex</span></button>
     </div>
@@ -2096,7 +2096,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 <div class="model-overlay loc-overlay" id="locOverlay" hidden>
   <div class="model-panel loc-panel">
     <div class="model-header loc-header">
-      <span>📍 Service de localisation</span>
+      <span>📍 Ma Position Exacte</span>
       <div style="display:flex;align-items:center;gap:8px">
         <button type="button" id="locClose" class="model-close">✕</button>
       </div>
@@ -2105,19 +2105,6 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
       <div class="loc-intro" style="padding:4px 4px 0;">
         <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5;">Obtenez votre adresse complète en un clic. L'IA utilisera automatiquement votre position pour les demandes locales (météo, restos, itinéraires...).</p>
       </div>
-
-      <div id="locServiceToggle" style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:14px;">
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:6px;">
-            <span id="locToggleIcon">📍</span> <span id="locToggleTitle">Service de localisation</span>
-          </div>
-          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px; line-height:1.3;" id="locServiceDesc">Désactivé — l'IA n'utilise pas ta position</div>
-        </div>
-        <button type="button" id="locToggleBtn" style="margin-left:12px; width:52px; height:30px; border-radius:999px; border:1px solid var(--border); background:var(--surface); position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0;">
-          <span id="locToggleKnob" style="position:absolute; top:2px; left:2px; width:24px; height:24px; border-radius:50%; background:#94a3b8; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
-        </button>
-      </div>
-
       <button type="button" id="locActionBtn" class="btn" style="width:100%; height:52px; font-weight:700; font-size:1rem; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;">📍 Localiser ma position précise</button>
       <div id="locStatus" style="display:none;"></div>
       <div id="locResult" style="display:none;"></div>
@@ -2615,49 +2602,6 @@ let locationStatus = 'idle';
 let locationErrorMsg = '';
 let locationEnabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
 
-
-function refreshLocationStateFromStorage(){
-  try{
-    const enabledRaw = localStorage.getItem(LOCATION_ENABLED_KEY);
-    locationEnabled = enabledRaw === 'true';
-    const raw = localStorage.getItem(LOCATION_KEY);
-    if(raw && locationEnabled){
-      try{
-        const parsed = JSON.parse(raw);
-        // Vérifie que la donnée est valide
-        if(parsed && parsed.lat && parsed.lon && parsed.timestamp){
-          userLocation = parsed;
-          if(locationStatus !== 'loading'){
-            locationStatus = 'success';
-          }
-        }else{
-          userLocation = null;
-          locationStatus = 'idle';
-        }
-      }catch{
-        userLocation = null;
-        locationStatus = 'idle';
-      }
-    }else{
-      // Si service désactivé ou pas de données, on force null pour garantir que l'IA ne peut pas localiser
-      if(!locationEnabled){
-        userLocation = null;
-        locationStatus = 'idle';
-      }
-    }
-  }catch(e){
-    console.warn('refreshLocationState error', e);
-  }
-  return {enabled: locationEnabled, hasLocation: !!userLocation, location: userLocation};
-}
-
-function logLocationStateForMessage(queryText){
-  const state = refreshLocationStateFromStorage();
-  const age = state.hasLocation ? Math.round((Date.now() - state.location.timestamp)/60000) : null;
-  console.log(`[📍 Service Loc] Vérification avant message: enabled=${state.enabled}, hasLoc=${state.hasLocation}, age=${age !== null ? age+'min' : 'N/A'}, queryLocal=${typeof isLocalQuery==='function' ? isLocalQuery(queryText) : 'unknown'}`);
-  return state;
-}
-
 function loadLocation(){
   try{
     const raw = localStorage.getItem(LOCATION_KEY);
@@ -2676,39 +2620,6 @@ function saveLocation(loc){
   locationEnabled = true;
   locationStatus = 'success';
 }
-
-function setLocationEnabled(enabled){
-  locationEnabled = !!enabled;
-  localStorage.setItem(LOCATION_ENABLED_KEY, locationEnabled ? 'true' : 'false');
-  if(!locationEnabled){
-    // 🔒 OFF = efface automatiquement la position stockée pour 100% privé
-    userLocation = null;
-    locationStatus = 'idle';
-    locationErrorMsg = '';
-    localStorage.removeItem(LOCATION_KEY);
-    // L'IA ne peut plus localiser du tout
-  }else if(!userLocation){
-    // Si on active sans position, on lance une demande
-    setTimeout(()=>{ if(typeof requestLocation==='function') requestLocation().catch(()=>{}); }, 300);
-  }
-  updateLocationUI();
-  renderLocPanel();
-  const sh = document.getElementById('statusHint');
-  if(sh){
-    if(locationEnabled){
-      sh.textContent = '📍 Service de localisation activé — l\'IA peut utiliser ta position';
-    }else{
-      sh.textContent = '📍 Service désactivé + position effacée — 100% privé, l\'IA ne peut plus localiser';
-    }
-    sh.style.display='block';
-    setTimeout(()=>{ sh.style.display='none'; }, 4000);
-  }
-}
-
-function toggleLocationService(){
-  setLocationEnabled(!locationEnabled);
-}
-
 function clearLocationData(){
   userLocation = null;
   locationStatus = 'idle';
@@ -2834,7 +2745,7 @@ function updateLocationUI(){
     if(locationStatus==='success' && locationEnabled && userLocation){
       badge.classList.add('active');
       badge.style.display='flex';
-      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m • Service ON`;
+      if(badgeText) badgeText.textContent=`📍 ${userLocation.ville} • ${userLocation.adresseComplete.slice(0,50)} • ±${Math.round(userLocation.accuracy)}m`;
     }else{
       badge.classList.remove('active');
       badge.style.display='none';
@@ -2842,52 +2753,13 @@ function updateLocationUI(){
   }
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
-    if(locationEnabled && userLocation && locationStatus==='success'){
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • ON • ${userLocation.ville}</span>`;
-    }else if(locationEnabled){
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • ON</span>`;
+    if(locationStatus==='success' && locationEnabled){
+      btn.innerHTML=`<span class="burger-icon">✅</span><span>Position active: ${userLocation ? userLocation.ville : ''}</span>`;
     }else{
-      btn.innerHTML=`<span class="burger-icon">📍</span><span>Service de localisation • OFF</span>`;
-    }
-  }
-  // Toggle UI
-  const toggleBtn = document.getElementById('locToggleBtn');
-  const toggleKnob = document.getElementById('locToggleKnob');
-  const toggleIcon = document.getElementById('locToggleIcon');
-  const toggleTitle = document.getElementById('locToggleTitle');
-  const toggleDesc = document.getElementById('locServiceDesc');
-  if(toggleBtn && toggleKnob){
-    if(locationEnabled){
-      toggleBtn.style.background = '#22c55e';
-      toggleBtn.style.borderColor = '#22c55e';
-      toggleKnob.style.left = '26px';
-      toggleKnob.style.background = '#fff';
-      if(toggleIcon) toggleIcon.textContent = '✅';
-      if(toggleTitle) toggleTitle.textContent = 'Service de localisation activé';
-      if(toggleDesc){
-        if(userLocation){
-          toggleDesc.textContent = `Activé — l'IA utilise: ${userLocation.ville} • ±${Math.round(userLocation.accuracy)}m • ${new Date(userLocation.timestamp).toLocaleTimeString('fr-CH')}`;
-          toggleDesc.style.color = '#166534';
-        }else{
-          toggleDesc.textContent = 'Activé — en attente de position...';
-          toggleDesc.style.color = '#166534';
-        }
-      }
-    }else{
-      toggleBtn.style.background = 'var(--surface)';
-      toggleBtn.style.borderColor = 'var(--border)';
-      toggleKnob.style.left = '2px';
-      toggleKnob.style.background = '#94a3b8';
-      if(toggleIcon) toggleIcon.textContent = '📍';
-      if(toggleTitle) toggleTitle.textContent = 'Service de localisation désactivé';
-      if(toggleDesc){
-        toggleDesc.textContent = 'Désactivé — l\'IA n\'utilise pas ta position. Active pour plus de précision.';
-        toggleDesc.style.color = 'var(--text-muted)';
-      }
+      btn.innerHTML=`<span class="burger-icon">📍</span><span>Ma position précise</span>`;
     }
   }
 }
-
 
 function renderLocPanel(){
   const statusEl=document.getElementById('locStatus');
@@ -2901,7 +2773,7 @@ function renderLocPanel(){
     statusEl.style.display='none';
     resultEl.style.display='none';
     actionBtn.style.display='flex';
-    actionBtn.textContent='📍 Actualiser manuellement ma position';
+    actionBtn.textContent='📍 Localiser ma position précise';
     actionBtn.disabled=false;
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
@@ -2919,7 +2791,7 @@ function renderLocPanel(){
     statusEl.innerHTML=`<div class="loc-status-error"><div style="font-weight:700;margin-bottom:4px;">❌ ${firstLine}</div><div style="font-size:0.8rem;opacity:0.9;white-space:pre-line;">${rest}</div></div>`;
     resultEl.style.display='none';
     actionBtn.style.display='flex';
-    actionBtn.textContent='🔄 Réessayer l\'actualisation';
+    actionBtn.textContent='🔄 Réessayer';
     actionBtn.disabled=false;
     if(copyBtn) copyBtn.style.display='none';
     if(clearBtn) clearBtn.style.display='none';
@@ -2941,7 +2813,7 @@ function renderLocPanel(){
       </div>
     `;
     actionBtn.style.display='flex';
-    actionBtn.textContent='🔄 Actualiser manuellement ma position';
+    actionBtn.textContent='🔄 Actualiser ma position';
     if(copyBtn) copyBtn.style.display='flex';
     if(clearBtn) clearBtn.style.display='flex';
   }
@@ -2983,8 +2855,6 @@ function getLocationAgeMinutes(){
 }
 
 function shouldAutoRefreshForQuery(text){
-  if(!locationEnabled) return false;
-
   if(!isLocalQuery(text)) return false;
   const age = getLocationAgeMinutes();
   // Si pas de loc, ou loc > 2 min, ou précision > 100m, on refresh
@@ -2995,11 +2865,6 @@ function shouldAutoRefreshForQuery(text){
 }
 
 async function autoRefreshLocationIfNeeded(queryText, {force=false, showHint=true}={}){
-  if(!locationEnabled && !force){
-    // Si service désactivé, on ne refresh pas automatiquement
-    return userLocation;
-  }
-
   const needs = force || shouldAutoRefreshForQuery(queryText);
   if(!needs) return userLocation;
   const sh = document.getElementById('statusHint');
@@ -3931,42 +3796,26 @@ if(!SpeechRecognition){
 
 
 async function sendMessage(){
-  // 📍 VÉRIFICATION ÉTAT LOCATION À CHAQUE MESSAGE (exigence utilisateur)
-  let locState = {enabled:false, hasLocation:false, location:null};
-  try{
-    if(typeof logLocationStateForMessage==='function'){
-      const rawForCheck = userInput.value.trim();
-      locState = logLocationStateForMessage(rawForCheck);
-    }else if(typeof refreshLocationStateFromStorage==='function'){
-      locState = refreshLocationStateFromStorage();
-    }
-    // Met à jour l'UI pour refléter l'état réel
-    if(typeof updateLocationUI==='function') updateLocationUI();
-  }catch(e){ console.warn('loc state check failed', e); }
-
   const rawText=userInput.value.trim(); const apiKey=getApiKey();
-  // 📍 Auto-actualisation si requête locale (après vérification état)
-  if(rawText && locState.enabled){
+  // 📍 Auto-actualisation si requête locale
+  if(rawText){
     try{
       if(typeof isLocalQuery==='function' && isLocalQuery(rawText)){
-        const age = locState.hasLocation && locState.location ? (Date.now() - locState.location.timestamp)/60000 : Infinity;
-        const accuracy = locState.location ? locState.location.accuracy : Infinity;
-        if(!locState.hasLocation || age > 2 || accuracy > 100){
+        const age = typeof getLocationAgeMinutes==='function' ? getLocationAgeMinutes() : Infinity;
+        if(!userLocation || age > 2 || (userLocation && userLocation.accuracy > 100)){
+          // On tente d'actualiser avant d'envoyer à l'IA pour précision maximale
           if(typeof autoRefreshLocationIfNeeded==='function'){
             await autoRefreshLocationIfNeeded(rawText, {showHint:true});
-            // Re-vérifie après refresh
-            locState = refreshLocationStateFromStorage();
           }
         }
       } else {
+        // Même si pas locale, refresh en background si >10min
         if(typeof maybeBackgroundRefresh==='function') maybeBackgroundRefresh();
       }
     }catch(e){
       console.warn('auto refresh loc error', e);
+      // On continue même si loc échoue
     }
-  } else if(!locState.enabled && rawText){
-    // Service désactivé → garantit que l'IA ne peut pas localiser
-    console.log('[📍 Service Loc] Service désactivé - l\'IA ne recevra pas de localisation pour ce message');
   }
 
   if((!rawText && !attachedFile) || !apiKey){ if(!apiKey){ openKeyPanel(); return; } if(!rawText && !attachedFile) return; }
@@ -4070,14 +3919,6 @@ if(locClearBtn){
     }
   });
 }
-
-const locToggleBtnEl = document.getElementById('locToggleBtn');
-if(locToggleBtnEl){
-  locToggleBtnEl.addEventListener('click', ()=>{
-    if(typeof toggleLocationService==='function') toggleLocationService();
-  });
-}
-
 if(locationBadgeClear){
   locationBadgeClear.addEventListener('click', ()=>{
     if(typeof clearLocationData==='function') clearLocationData();
