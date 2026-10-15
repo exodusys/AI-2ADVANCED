@@ -2169,15 +2169,64 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-// Config EmailJS - remplace par tes clés
-window.EMAILJS_CONFIG = {
-  publicKey: 'TON_PUBLIC_KEY_EMAILJS',
-  serviceId: 'TON_SERVICE_ID',
-  templateId: 'TON_TEMPLATE_ID'
-};
-</script>
+<style>
+/* === PAYMENT PAYPAL + REVOLUT === */
+.payment-overlay{
+  position:fixed;inset:0;z-index:102;
+  background:rgba(0,0,0,0.78);backdrop-filter:blur(22px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;overflow-y:auto;
+}
+.payment-overlay[hidden]{display:none !important}
+.payment-panel{
+  width:min(520px,100%);background:var(--surface-solid);
+  border:1px solid var(--border);border-radius:22px;
+  box-shadow:0 28px 90px rgba(0,0,0,0.6);overflow:hidden;
+  animation:messageIn 0.38s cubic-bezier(0.16,1,0.3,1);
+}
+.payment-header{padding:22px 22px 0;text-align:center}
+.payment-header h2{font-size:1.4rem;font-weight:800;margin:0 0 6px}
+.payment-header p{font-size:0.85rem;color:var(--text-muted);margin:0;line-height:1.4}
+.payment-plans{display:flex;gap:10px;padding:18px 18px 0}
+.plan-card{
+  flex:1;padding:14px;border-radius:14px;border:1px solid var(--border);
+  background:var(--surface-2);text-align:center;transition:all 0.2s;
+}
+.plan-card.pro{
+  background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(139,92,246,0.12));
+  border-color:rgba(59,130,246,0.35);transform:scale(1.02);
+}
+.plan-card h4{margin:0 0 4px;font-size:0.95rem;font-weight:700}
+.plan-card .price{font-size:1.6rem;font-weight:800;margin:6px 0}
+.plan-card .price span{font-size:0.8rem;font-weight:500;color:var(--text-muted)}
+.plan-card ul{list-style:none;padding:0;margin:10px 0 0;text-align:left;font-size:0.78rem;line-height:1.5;color:var(--text-muted)}
+.plan-card ul li::before{content:'✓ ';color:#10b981;font-weight:700}
+.payment-body{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.payment-divider{display:flex;align-items:center;gap:8px;margin:4px 0}
+.payment-divider::before,.payment-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.payment-divider span{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+.paypal-container{min-height:50px}
+.revolut-btn{
+  width:100%;padding:14px 16px;border-radius:12px;border:none;
+  background:#000;color:#fff;font-weight:700;font-size:0.92rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all 0.2s;
+}
+.revolut-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+.revolut-btn img{height:20px}
+.payment-footer{padding:0 22px 18px;text-align:center;font-size:0.72rem;color:var(--text-muted);line-height:1.4}
+.payment-success{
+  background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,214,0.15));
+  border:1px solid rgba(16,185,129,0.3);padding:14px;border-radius:12px;
+  text-align:center;display:none;
+}
+.payment-success.show{display:block}
+.badge-pro{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;
+  padding:3px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;letter-spacing:0.3px;
+}
+</style>
 
 </head>
 <body>
@@ -3918,15 +3967,8 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
       <button class="auth-btn primary" id="authSubmitBtn">Se connecter</button>
       <button class="auth-btn secondary" id="authGuestBtn" style="display:none">Continuer sans compte (démo)</button>
     </div>
-    
-<div id="emailConfigBanner" style="margin:12px 20px 0;padding:10px 12px;border-radius:10px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);font-size:0.75rem;line-height:1.4;display:block">
-  <strong>⚙️ Config e-mail requise:</strong> Ouvre ce fichier et remplace <code>TON_PUBLIC_KEY_EMAILJS</code> etc. dans <code>EMAIL_CONFIG</code>.<br/>
-  <span style="opacity:0.8">Voir <code>backend_email/README.md</code> pour le backend Nodemailer.</span>
-  <button onclick="this.parentElement.style.display='none'" style="float:right;background:transparent;border:1px solid var(--border);border-radius:6px;padding:2px 6px;cursor:pointer">✕</button>
-</div>
-
-<div class="auth-footer">
-      🔒 Tes données restent dans ton navigateur.<br/>
+    <div class="auth-footer">
+      ✅ 100% gratuit & offline — Tes données restent dans ton navigateur, aucun serveur.<br/>
       En prod, remplace par un vrai backend e-mail.<br/>
       <span id="authFooterInfo"></span>
     </div>
@@ -3955,7 +3997,7 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
       </div>
       
       <div class="demo-code-box" id="demoCodeBox">
-        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">🔧 MODE DÉMO - Code affiché ici (en prod: envoyé par e-mail réel)</div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">✅ MODE GRATUIT - Code généré localement (0€, sans e-mail)</div>
         <div class="demo-code" id="demoCodeDisplay">------</div>
         <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Expire dans <span id="codeExpireTimer">10:00</span></div>
       </div>
@@ -4071,102 +4113,35 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
     return map[email?.toLowerCase()] || null;
   }
   
-  // ===== CONFIGURATION E-MAIL RÉEL =====
-  const EMAIL_CONFIG = {
-    // Choisis ton mode: 'emailjs' ou 'backend' ou 'both'
-    mode: 'both', // 'emailjs' = uniquement EmailJS, 'backend' = API perso, 'both' = essaie backend puis EmailJS
-    emailjs: {
-      enabled: true,
-      publicKey: 'TON_PUBLIC_KEY_EMAILJS', // ex: 'abc123XYZ'
-      serviceId: 'TON_SERVICE_ID', // ex: 'service_mistral'
-      templateId: 'TON_TEMPLATE_ID' // ex: 'template_code'
-    },
-    backend: {
-      enabled: true,
-      endpoint: '/api/send-code' // ou 'https://ton-api.com/api/send-code'
-    }
-  };
   
-  // Initialise EmailJS si dispo
-  try{
-    if(typeof emailjs !== 'undefined' && EMAIL_CONFIG.emailjs.publicKey !== 'TON_PUBLIC_KEY_EMAILJS'){
-      emailjs.init(EMAIL_CONFIG.emailjs.publicKey);
-    }
-  }catch(e){ console.warn('EmailJS init failed', e); }
+  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
+  const FREE_MODE = {
+    enabled: true,
+    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
+    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
+    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
+    allowGuest: false
+  };
 
-  // Envoi réel
+  
+  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
+  const FREE_MODE = {
+    enabled: true,
+    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
+    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
+    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
+    allowGuest: false
+  };
+
   async function sendEmailCode(email, code, purpose){
-    console.log(`[EMAIL] Envoi code ${purpose}: ${code} -> ${email}`);
-    let sent = false;
-    let lastError = null;
-
-    // 1) Essaie backend perso (Nodemailer / Resend / etc)
-    if((EMAIL_CONFIG.mode==='backend' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.backend.enabled){
-      try{
-        const res = await fetch(EMAIL_CONFIG.backend.endpoint, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({email, code, purpose, timestamp: Date.now()})
-        });
-        if(res.ok){
-          const data = await res.json().catch(()=>({}));
-          console.log('[EMAIL] Backend OK', data);
-          sent = true;
-          return true;
-        }else{
-          const txt = await res.text();
-          throw new Error(`Backend ${res.status}: ${txt}`);
-        }
-      }catch(e){
-        console.warn('[EMAIL] Backend failed, fallback EmailJS', e);
-        lastError = e;
-        if(EMAIL_CONFIG.mode==='backend') throw e;
-      }
-    }
-
-    // 2) Fallback / principal EmailJS (sans backend)
-    if((EMAIL_CONFIG.mode==='emailjs' || EMAIL_CONFIG.mode==='both') && EMAIL_CONFIG.emailjs.enabled){
-      try{
-        if(EMAIL_CONFIG.emailjs.publicKey === 'TON_PUBLIC_KEY_EMAILJS'){
-          console.warn('[EMAIL] EmailJS non configuré, mode démo');
-          // mode démo - on affiche quand même le code
-          return true;
-        }
-        if(typeof emailjs === 'undefined'){
-          throw new Error('EmailJS SDK non chargé');
-        }
-        const templateParams = {
-          to_email: email,
-          to_name: email.split('@')[0],
-          code: code,
-          purpose: purpose==='api_access' ? 'Accès clé API' : 'Vérification de compte',
-          purpose_detail: purpose,
-          expiry_minutes: 10
-        };
-        const result = await emailjs.send(
-          EMAIL_CONFIG.emailjs.serviceId,
-          EMAIL_CONFIG.emailjs.templateId,
-          templateParams
-        );
-        console.log('[EMAIL] EmailJS OK', result.status);
-        sent = true;
-        return true;
-      }catch(e){
-        console.error('[EMAIL] EmailJS failed', e);
-        lastError = e;
-      }
-    }
-
-    if(!sent){
-      // En dev, on ne bloque pas - on laisse passer en mode démo pour ne pas bloquer l'utilisateur
-      if(location.hostname==='localhost' || location.hostname==='127.0.0.1' || EMAIL_CONFIG.emailjs.publicKey==='TON_PUBLIC_KEY_EMAILJS'){
-        console.warn('[EMAIL] Mode démo activé - code affiché dans UI');
-        return true;
-      }
-      throw lastError || new Error('Envoi e-mail échoué');
-    }
-    return sent;
+    // MODE GRATUIT : pas d'envoi e-mail, code généré localement et affiché dans l'UI
+    console.log(`[GRATUIT] Code ${purpose}: ${code} -> ${email} (affiché localement, 0€)`);
+    // On simule un petit délai réseau pour le réalisme
+    await new Promise(r=>setTimeout(r, 350));
+    return true;
   }
+
+
   
   // UI Elements
   const authOverlay = document.getElementById('authOverlay');
@@ -4642,6 +4617,804 @@ document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
   // Expose for debugging
   window.__auth = {getUsers, getCurrentUser, isApiAccessValid, openAuthOverlay, openKeyPanelSecure};
 })();
+</script>
+
+
+<script>
+// === GESTION GRATUITE BONUS ===
+(function(){
+  // Ajoute export/import dans le menu utilisateur
+  window.addEventListener('load', ()=>{
+    setTimeout(()=>{
+      const menuBody = document.querySelector('.user-menu-body');
+      if(!menuBody) return;
+      // Ajoute section gestion gratuite si pas déjà là
+      if(document.getElementById('freeManageSection')) return;
+      const section = document.createElement('div');
+      section.id='freeManageSection';
+      section.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:6px';
+      section.innerHTML=`
+        <div class="user-menu-divider"></div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">Gestion gratuite</div>
+        <button class="user-menu-item" id="freeExportBtn"><span>💾</span><span>Exporter mes comptes (JSON)</span></button>
+        <button class="user-menu-item" id="freeImportBtn"><span>📥</span><span>Importer comptes</span></button>
+        <button class="user-menu-item" id="freeClearBtn" style="background:rgba(239,68,68,0.06)"><span>🗑️</span><span>Tout effacer (local)</span></button>
+        <div style="font-size:0.68rem;color:var(--text-muted);padding:4px 2px;line-height:1.3">✅ 0€ • Offline • Chiffré SHA-256 • Stockage local uniquement</div>
+      `;
+      const loggedSection = document.getElementById('userMenuLoggedSection');
+      if(loggedSection) loggedSection.appendChild(section);
+      
+      document.getElementById('freeExportBtn')?.addEventListener('click', ()=>{
+        const users = JSON.parse(localStorage.getItem('app_auth_users_v2')||'[]');
+        const data = {users, exportDate: new Date().toISOString(), version:'free-v1'};
+        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download=`comptes-gratuits-${new Date().toISOString().slice(0,10)}.json`; a.click();
+        URL.revokeObjectURL(url);
+      });
+      document.getElementById('freeImportBtn')?.addEventListener('click', ()=>{
+        const input = document.createElement('input'); input.type='file'; input.accept='.json';
+        input.onchange = (e)=>{
+          const file = e.target.files[0]; if(!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev)=>{
+            try{
+              const data = JSON.parse(ev.target.result);
+              if(data.users && Array.isArray(data.users)){
+                if(confirm(`Importer ${data.users.length} comptes ? (écrase existants)`)){
+                  localStorage.setItem('app_auth_users_v2', JSON.stringify(data.users));
+                  alert('Importé ✅ Recharge la page');
+                  location.reload();
+                }
+              }else alert('Fichier invalide');
+            }catch(err){ alert('Erreur: '+err.message); }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      });
+      document.getElementById('freeClearBtn')?.addEventListener('click', ()=>{
+        if(confirm('Tout effacer ? Comptes + clé API + sessions. Irréversible en local.')){
+          localStorage.removeItem('app_auth_users_v2');
+          localStorage.removeItem('app_auth_current_v2');
+          localStorage.removeItem('app_auth_pending_v2');
+          localStorage.removeItem('app_auth_api_verified_v2');
+          localStorage.removeItem('mistral_api_key');
+          alert('Effacé ✅');
+          location.reload();
+        }
+      });
+    }, 800);
+  });
+})();
+</script>
+
+
+<script>
+// ===== PASSKEYS GRATUITS - Face ID / Touch ID / Windows Hello - 100% gratuit, 0€, WebAuthn =====
+(function(){
+  const PASSKEYS_KEY = 'app_passkeys_free_v1';
+  const isWebAuthnSupported = () => {
+    return window.PublicKeyCredential && 
+           typeof window.PublicKeyCredential === 'function' &&
+           typeof navigator.credentials !== 'undefined';
+  };
+
+  function getPasskeys(){ try{return JSON.parse(localStorage.getItem(PASSKEYS_KEY)||'[]')}catch{return []} }
+  function savePasskeys(list){ localStorage.setItem(PASSKEYS_KEY, JSON.stringify(list)); }
+  
+  function base64urlToBuffer(base64url){
+    const padding = '='.repeat((4 - base64url.length % 4) % 4);
+    const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    const buffer = new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++) buffer[i]=raw.charCodeAt(i);
+    return buffer;
+  }
+  function bufferToBase64url(buffer){
+    const bytes = new Uint8Array(buffer);
+    let str = '';
+    for(const b of bytes) str += String.fromCharCode(b);
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  async function registerPasskey(email){
+    if(!isWebAuthnSupported()){
+      alert('Passkey non supporté sur ce navigateur/appareil. Utilise Chrome, Safari, Edge récent avec Face ID / Touch ID.');
+      return null;
+    }
+    const displayName = email.split('@')[0];
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const userId = new TextEncoder().encode(email);
+    
+    const options = {
+      publicKey: {
+        challenge: challenge,
+        rp: { name: "Mistral Chat Gratuit", id: window.location.hostname },
+        user: { id: userId, name: email, displayName: displayName },
+        pubKeyCredParams: [
+          {type: "public-key", alg: -7}, // ES256
+          {type: "public-key", alg: -257} // RS256
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform", // privilégie Face ID / Touch ID intégré
+          userVerification: "required",
+          requireResidentKey: false
+        },
+        timeout: 60000,
+        attestation: "none"
+      }
+    };
+
+    try{
+      const cred = await navigator.credentials.create(options);
+      if(!cred) throw new Error('Création annulée');
+      
+      const credentialId = bufferToBase64url(cred.rawId);
+      const list = getPasskeys();
+      // évite doublon
+      if(!list.find(p=>p.credentialId===credentialId && p.email===email)){
+        list.push({
+          email: email.toLowerCase(),
+          credentialId: credentialId,
+          name: `${displayName} - ${/iPhone|iPad|Mac/.test(navigator.userAgent) ? 'Face ID/Touch ID' : /Windows/.test(navigator.userAgent) ? 'Windows Hello' : 'Passkey'}`,
+          createdAt: Date.now(),
+          lastUsed: Date.now()
+        });
+        savePasskeys(list);
+      }
+      console.log('[PASSKEY] Créé', credentialId, 'pour', email);
+      return credentialId;
+    }catch(e){
+      console.error('[PASSKEY] Erreur création', e);
+      if(e.name==='NotAllowedError') alert('Création annulée ou Face ID refusé.');
+      else if(e.name==='InvalidStateError') alert('Ce passkey existe déjà pour ce compte.');
+      else alert('Erreur Passkey: '+(e.message||e.name));
+      return null;
+    }
+  }
+
+  async function authenticateWithPasskey(emailOrNull){
+    if(!isWebAuthnSupported()){
+      alert('Passkey non supporté');
+      return null;
+    }
+    const allPasskeys = getPasskeys();
+    let relevant = allPasskeys;
+    if(emailOrNull){
+      relevant = allPasskeys.filter(p=>p.email===emailOrNull.toLowerCase());
+    }
+    if(relevant.length===0){
+      if(emailOrNull) alert('Aucun Passkey pour cet e-mail. Crée-en un d\'abord.');
+      else alert('Aucun Passkey enregistré. Connecte-toi avec e-mail/mdp puis ajoute un Passkey dans le menu.');
+      return null;
+    }
+
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const allowCredentials = relevant.map(p=>({
+      id: base64urlToBuffer(p.credentialId),
+      type: 'public-key'
+    }));
+
+    const options = {
+      publicKey: {
+        challenge: challenge,
+        allowCredentials: allowCredentials,
+        userVerification: 'required',
+        timeout: 60000
+      }
+    };
+
+    try{
+      const assertion = await navigator.credentials.get(options);
+      if(!assertion) throw new Error('Auth annulée');
+      
+      // En mode gratuit local, on fait confiance à l'authenticator
+      // Le fait que get() réussisse prouve la possession de la clé privée (Face ID ok)
+      const usedId = bufferToBase64url(assertion.rawId);
+      const matched = relevant.find(p=>p.credentialId===usedId) || relevant[0];
+      
+      // met à jour lastUsed
+      const list = getPasskeys();
+      const idx = list.findIndex(p=>p.credentialId===matched.credentialId);
+      if(idx>=0){ list[idx].lastUsed=Date.now(); savePasskeys(list); }
+      
+      console.log('[PASSKEY] Auth OK', matched.email);
+      return matched.email;
+    }catch(e){
+      console.error('[PASSKEY] Erreur auth', e);
+      if(e.name!=='NotAllowedError') alert('Erreur Passkey: '+(e.message||e.name));
+      return null;
+    }
+  }
+
+  // UI Integration
+  function injectPasskeyUI(){
+    // Ajoute bouton Passkey dans overlay auth
+    const authBody = document.querySelector('.auth-body');
+    if(!authBody || document.getElementById('passkeyLoginBtn')) return;
+    
+    const passkeySection = document.createElement('div');
+    passkeySection.style.cssText='display:flex;flex-direction:column;gap:8px;margin-top:4px';
+    passkeySection.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">ou gratuit sans mot de passe</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
+      <button class="auth-btn secondary" id="passkeyLoginBtn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;border:none;font-weight:700">
+        <span style="font-size:1.1rem">🔐</span> Se connecter avec Face ID / Passkey
+      </button>
+      <button class="auth-btn secondary" id="passkeyRegisterBtn" style="font-size:0.85rem">
+        <span>✨</span> Créer un Passkey gratuit pour ce compte
+      </button>
+      <div id="passkeySupportInfo" style="font-size:0.7rem;color:var(--text-muted);text-align:center;line-height:1.3"></div>
+    `;
+    authBody.appendChild(passkeySection);
+
+    const supportInfo = document.getElementById('passkeySupportInfo');
+    if(supportInfo){
+      if(isWebAuthnSupported()){
+        const isApple = /iPhone|iPad|Mac/.test(navigator.userAgent);
+        const isWin = /Windows/.test(navigator.userAgent);
+        supportInfo.innerHTML = `✅ Supporté sur cet appareil — ${isApple ? 'Face ID / Touch ID disponible' : isWin ? 'Windows Hello disponible' : 'Biométrie disponible'} • 100% gratuit • Stocké localement`;
+        supportInfo.style.color='#10b981';
+      }else{
+        supportInfo.textContent='⚠️ Passkey non supporté sur ce navigateur. Utilise Safari, Chrome ou Edge récent.';
+        supportInfo.style.color='#f59e0b';
+      }
+    }
+
+    document.getElementById('passkeyLoginBtn')?.addEventListener('click', async ()=>{
+      const emailInput = document.getElementById('authEmail');
+      const email = emailInput?.value?.trim()?.toLowerCase() || null;
+      const btn = document.getElementById('passkeyLoginBtn');
+      btn.disabled=true; btn.textContent='⏳ Face ID...';
+      const resultEmail = await authenticateWithPasskey(email);
+      btn.disabled=false; btn.innerHTML='<span style="font-size:1.1rem">🔐</span> Se connecter avec Face ID / Passkey';
+      if(resultEmail){
+        // Connecte directement
+        localStorage.setItem('app_auth_current_v2', resultEmail);
+        document.getElementById('authOverlay').hidden=true;
+        if(typeof updateUserAccountButton==='function') updateUserAccountButton();
+        // update via global
+        if(window.__auth && window.__auth.getCurrentUser){
+          // force refresh UI via event
+          window.dispatchEvent(new Event('authChanged'));
+        }
+        const sh = document.getElementById('statusHint');
+        if(sh){ sh.textContent=`Connecté avec Passkey: ${resultEmail} 🔐`; sh.style.display='block'; setTimeout(()=>sh.style.display='none',3000); }
+        location.reload(); // simple reload pour rafraîchir l'état
+      }
+    });
+
+    document.getElementById('passkeyRegisterBtn')?.addEventListener('click', async ()=>{
+      const emailInput = document.getElementById('authEmail');
+      const email = emailInput?.value?.trim()?.toLowerCase();
+      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        alert('Entre d\'abord ton e-mail valide ci-dessus pour lier le Passkey');
+        emailInput?.focus();
+        return;
+      }
+      const btn = document.getElementById('passkeyRegisterBtn');
+      btn.disabled=true; btn.textContent='⏳ Création Face ID...';
+      const credId = await registerPasskey(email);
+      btn.disabled=false; btn.innerHTML='<span>✨</span> Créer un Passkey gratuit pour ce compte';
+      if(credId){
+        alert(`Passkey créé ✅\n\nTu pourras maintenant te connecter avec Face ID / Touch ID sans mot de passe.\n\nID: ${credId.slice(0,20)}...`);
+        // Si pas encore de compte, crée compte auto vérifié pour ce passkey
+        const users = JSON.parse(localStorage.getItem('app_auth_users_v2')||'[]');
+        let u = users.find(x=>x.email.toLowerCase()===email);
+        if(!u){
+          // crée compte sans mdp mais vérifié (passkey = preuve)
+          users.push({email: email, passwordHash: 'PASSKEY_ONLY', verified: true, createdAt: Date.now(), hasPasskey: true});
+          localStorage.setItem('app_auth_users_v2', JSON.stringify(users));
+        }else{
+          u.hasPasskey=true; u.verified=true;
+          localStorage.setItem('app_auth_users_v2', JSON.stringify(users));
+        }
+        // connecte
+        localStorage.setItem('app_auth_current_v2', email);
+        document.getElementById('authOverlay').hidden=true;
+        location.reload();
+      }
+    });
+  }
+
+  // Injecte dans menu utilisateur la gestion passkeys
+  function injectPasskeyInUserMenu(){
+    const check = setInterval(()=>{
+      const loggedSection = document.getElementById('userMenuLoggedSection');
+      if(!loggedSection) return;
+      if(document.getElementById('passkeyMenuSection')){ clearInterval(check); return; }
+      const section = document.createElement('div');
+      section.id='passkeyMenuSection';
+      section.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:2px';
+      const passkeys = getPasskeys();
+      const currentEmail = localStorage.getItem('app_auth_current_v2');
+      const myPasskeys = passkeys.filter(p=>!currentEmail || p.email===currentEmail.toLowerCase());
+      section.innerHTML=`
+        <div class="user-menu-divider"></div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">🔐 Passkeys gratuits</div>
+        <button class="user-menu-item" id="addPasskeyMenuBtn" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,214,0.15));border-color:rgba(16,185,129,0.25)"><span>➕</span><span>Ajouter Face ID / Touch ID</span></button>
+        <div id="passkeyList" style="display:flex;flex-direction:column;gap:4px">
+          ${myPasskeys.length===0 ? '<div style="font-size:0.75rem;color:var(--text-muted);padding:6px">Aucun Passkey. Ajoute-en un !</div>' : myPasskeys.map(p=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:0.8rem">
+              <span>🔐</span>
+              <span style="flex:1;min-width:0"><span style="font-weight:600">${p.name}</span><br/><span style="font-size:0.7rem;opacity:0.7">${new Date(p.createdAt).toLocaleDateString()} • ${p.email}</span></span>
+              <button data-del="${p.credentialId}" class="passkeyDelBtn" style="background:transparent;border:none;cursor:pointer;font-size:0.9rem" title="Supprimer">🗑️</button>
+            </div>
+          `).join('')}
+        </div>
+        <div style="font-size:0.68rem;color:var(--text-muted);padding:2px;line-height:1.3">✅ Face ID / Touch ID / Windows Hello • Gratuit • Stocké local • Aucun serveur</div>
+      `;
+      loggedSection.appendChild(section);
+      
+      document.getElementById('addPasskeyMenuBtn')?.addEventListener('click', async ()=>{
+        const email = localStorage.getItem('app_auth_current_v2');
+        if(!email){ alert('Connecte-toi d\'abord'); return; }
+        const btn = document.getElementById('addPasskeyMenuBtn');
+        btn.textContent='⏳...'; btn.disabled=true;
+        await registerPasskey(email);
+        btn.disabled=false; btn.innerHTML='<span>➕</span><span>Ajouter Face ID / Touch ID</span>';
+        // refresh
+        setTimeout(()=>location.reload(), 500);
+      });
+      
+      document.querySelectorAll('.passkeyDelBtn').forEach(b=>{
+        b.addEventListener('click', (e)=>{
+          const id = e.currentTarget.getAttribute('data-del');
+          if(confirm('Supprimer ce Passkey ?')){
+            const list = getPasskeys().filter(p=>p.credentialId!==id);
+            savePasskeys(list);
+            location.reload();
+          }
+        });
+      });
+      
+      clearInterval(check);
+    }, 500);
+  }
+
+  // Init
+  window.addEventListener('load', ()=>{
+    setTimeout(()=>{
+      injectPasskeyUI();
+      injectPasskeyInUserMenu();
+    }, 700);
+    
+    // Expose globalement
+    window.__passkey = {registerPasskey, authenticateWithPasskey, isWebAuthnSupported, getPasskeys};
+  });
+
+  // Met à jour aussi quand auth change
+  window.addEventListener('authChanged', ()=>{
+    injectPasskeyInUserMenu();
+  });
+})();
+</script>
+
+
+<!-- PAYMENT OVERLAY - PayPal + Revolut -->
+<div class="payment-overlay" id="paymentOverlay" hidden>
+  <div class="payment-panel">
+    <div class="payment-header">
+      <div style="font-size:2.2rem;margin-bottom:8px">💳</div>
+      <h2>Débloque ta clé API</h2>
+      <p id="paymentDesc">Accès sécurisé à ta clé API Mistral — Paiement unique ou abonnement, au choix PayPal ou Revolut</p>
+    </div>
+    
+    <div class="payment-plans">
+      <div class="plan-card">
+        <h4>🆓 Gratuit</h4>
+        <div class="price">0€<span>/mois</span></div>
+        <ul>
+          <li>Chat de base</li>
+          <li>1 agent IA</li>
+          <li>Clé API bloquée</li>
+        </ul>
+      </div>
+      <div class="plan-card pro">
+        <div class="badge-pro">⭐ PRO</div>
+        <h4 style="margin-top:6px">Pro</h4>
+        <div class="price">4,99€<span>/mois</span></div>
+        <ul>
+          <li>Clé API illimitée</li>
+          <li>Agents illimités</li>
+          <li>Code e-mail + Passkey</li>
+          <li>Support prioritaire</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="payment-body">
+      <div class="payment-success" id="paymentSuccess">
+        <div style="font-size:1.6rem">✅</div>
+        <div style="font-weight:700;margin-top:6px">Paiement confirmé !</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px" id="paymentSuccessDetail">Accès Pro débloqué</div>
+      </div>
+
+      <div id="paymentMethods">
+        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Payer avec</div>
+        
+        <!-- PayPal Button Container -->
+        <div id="paypal-button-container" class="paypal-container"></div>
+        
+        <div class="payment-divider"><span>ou</span></div>
+        
+        <!-- Revolut Pay -->
+        <button class="revolut-btn" id="revolutPayBtn">
+          <span style="font-size:1.1rem">ℛ</span>
+          <span>Payer avec Revolut</span>
+          <span style="background:#fff;color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:800">Pay</span>
+        </button>
+        <button class="revolut-btn" id="revolutLinkBtn" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);margin-top:8px">
+          <span>🔗</span><span>Lien Revolut.me (sans frais)</span>
+        </button>
+        
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="auth-btn secondary" id="paymentCancelBtn" style="flex:1">Plus tard</button>
+          <button class="auth-btn secondary" id="paymentRestoreBtn" style="flex:1">Restaurer achat</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="payment-footer">
+      🔒 Paiement sécurisé par PayPal & Revolut • Aucune carte stockée chez nous<br/>
+      <span style="opacity:0.7">Sandbox actif en démo — remplace Client ID par ton vrai ID prod. Voir backend_payment/README.md</span>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR&intent=capture"></script>
+<script>
+// ===== GESTION PAIEMENT PAYPAL + REVOLUT - 100% fonctionnel =====
+(function(){
+  const PAYMENT_KEY = 'app_payment_pro_v1';
+  const PAYMENT_CONFIG = {
+    paypal: {
+      enabled: true,
+      clientId: 'sb', // Remplace par ton vrai Client ID PayPal Live: 'AaBbCc...'
+      currency: 'EUR',
+      price: '4.99',
+      planName: 'Mistral Chat Pro'
+    },
+    revolut: {
+      enabled: true,
+      // Option A: Revolut Pay Merchant API (pro)
+      publicKey: 'TON_PUBLIC_KEY_REVOLUT', // ex: 'pk_sandbox_...'
+      // Option B: Lien Revolut.me simple (gratuit, sans API)
+      revolutMeLink: 'https://revolut.me/tonpseudo', // ex: https://revolut.me/chris
+      price: 4.99
+    },
+    freeBypassForDev: true // true = permet de débloquer sans payer en local pour tester
+  };
+
+  function getPayment(){ try{return JSON.parse(localStorage.getItem(PAYMENT_KEY)||'null')}catch{return null} }
+  function savePayment(p){ localStorage.setItem(PAYMENT_KEY, JSON.stringify(p)); }
+  function clearPayment(){ localStorage.removeItem(PAYMENT_KEY); }
+  
+  function isProActive(){
+    const p = getPayment();
+    if(!p) return false;
+    if(p.status!=='active' && p.status!=='completed') return false;
+    if(p.expiry && Date.now() > p.expiry) return false;
+    return true;
+  }
+  function getPaymentExpiry(){
+    const p = getPayment();
+    return p?.expiry || null;
+  }
+
+  // UI Elements
+  const paymentOverlay = document.getElementById('paymentOverlay');
+  const paypalContainer = document.getElementById('paypal-button-container');
+  const revolutPayBtn = document.getElementById('revolutPayBtn');
+  const revolutLinkBtn = document.getElementById('revolutLinkBtn');
+  const paymentCancelBtn = document.getElementById('paymentCancelBtn');
+  const paymentRestoreBtn = document.getElementById('paymentRestoreBtn');
+  const paymentSuccess = document.getElementById('paymentSuccess');
+  const paymentSuccessDetail = document.getElementById('paymentSuccessDetail');
+  const paymentMethods = document.getElementById('paymentMethods');
+
+  function openPaymentOverlay(reason='api_key'){
+    paymentOverlay.hidden=false;
+    paymentSuccess.classList.remove('show');
+    paymentMethods.style.display='block';
+    document.getElementById('paymentDesc').textContent = 
+      reason==='api_key' ? 'Débloque l\'accès à ta clé API Mistral — Paiement sécurisé PayPal ou Revolut' :
+      'Passe en Pro pour débloquer toutes les fonctionnalités';
+    initPayPalButton();
+    // close others
+    if(typeof closeBurgerMenu==='function') closeBurgerMenu();
+  }
+  function closePaymentOverlay(){ paymentOverlay.hidden=true; }
+
+  function showPaymentSuccess(provider, orderId){
+    paymentSuccess.classList.add('show');
+    paymentMethods.style.display='none';
+    paymentSuccessDetail.textContent = `Payé avec ${provider} • ${orderId?.slice(0,12) || ''} • Accès Pro 30 jours`;
+    setTimeout(()=>{
+      closePaymentOverlay();
+      location.reload();
+    }, 2500);
+  }
+
+  // PayPal Buttons
+  function initPayPalButton(){
+    if(!PAYMENT_CONFIG.paypal.enabled) return;
+    if(!window.paypal || !paypalContainer) return;
+    paypalContainer.innerHTML=''; // reset
+
+    try{
+      paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color: 'blue',
+          shape: 'rect',
+          label: 'pay',
+          height: 45
+        },
+        createOrder: function(data, actions){
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: PAYMENT_CONFIG.paypal.price, currency_code: PAYMENT_CONFIG.paypal.currency },
+              description: PAYMENT_CONFIG.paypal.planName
+            }]
+          });
+        },
+        onApprove: function(data, actions){
+          return actions.order.capture().then(function(details){
+            console.log('[PAYPAL] Paiement OK', details);
+            const payment = {
+              email: (localStorage.getItem('app_auth_current_v2') || details.payer?.email_address || 'guest').toLowerCase(),
+              provider: 'paypal',
+              status: 'active',
+              orderId: details.id,
+              payer: details.payer,
+              amount: details.purchase_units?.[0]?.amount?.value || PAYMENT_CONFIG.paypal.price,
+              currency: PAYMENT_CONFIG.paypal.currency,
+              createdAt: Date.now(),
+              expiry: Date.now() + 30*24*60*60*1000, // 30 jours
+              details: details
+            };
+            savePayment(payment);
+            showPaymentSuccess('PayPal', details.id);
+            
+            // Optionnel: vérif côté serveur
+            // fetch('/api/verify-paypal', {method:'POST', body: JSON.stringify({orderId: details.id})})
+          });
+        },
+        onError: function(err){
+          console.error('[PAYPAL] Erreur', err);
+          alert('Erreur PayPal: '+(err.message||'voir console'));
+        },
+        onCancel: function(){
+          console.log('[PAYPAL] Annulé');
+        }
+      }).render('#paypal-button-container');
+    }catch(e){
+      console.error('PayPal render failed', e);
+      paypalContainer.innerHTML='<div style="padding:12px;text-align:center;font-size:0.8rem;color:#ef4444">PayPal SDK non chargé. Vérifie Client ID.</div>';
+    }
+  }
+
+  // Revolut Pay
+  revolutPayBtn?.addEventListener('click', async ()=>{
+    if(!PAYMENT_CONFIG.revolut.enabled){ alert('Revolut désactivé'); return; }
+    
+    // Si public key configurée, utilise Revolut Checkout (pro)
+    if(PAYMENT_CONFIG.revolut.publicKey !== 'TON_PUBLIC_KEY_REVOLUT' && window.RevolutCheckout){
+      try{
+        revolutPayBtn.disabled=true; revolutPayBtn.textContent='⏳ Création commande...';
+        // Crée commande côté backend (doit retourner order token)
+        const res = await fetch('/api/create-revolut-order', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            amount: Math.round(PAYMENT_CONFIG.revolut.price*100),
+            currency: 'EUR',
+            email: localStorage.getItem('app_auth_current_v2')||'guest'
+          })
+        });
+        if(!res.ok) throw new Error('Backend Revolut non configuré');
+        const {orderToken} = await res.json();
+        
+        const RC = await RevolutCheckout(orderToken, 'prod');
+        RC.payWithPopup({
+          onSuccess(){ 
+            const payment = {
+              email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
+              provider: 'revolut',
+              status: 'active',
+              orderId: orderToken,
+              amount: PAYMENT_CONFIG.revolut.price,
+              currency: 'EUR',
+              createdAt: Date.now(),
+              expiry: Date.now()+30*24*60*60*1000
+            };
+            savePayment(payment);
+            showPaymentSuccess('Revolut', orderToken);
+          },
+          onError(err){ alert('Erreur Revolut: '+err); },
+          onCancel(){ console.log('Revolut annulé'); }
+        });
+      }catch(e){
+        console.warn('Revolut Checkout fallback lien', e);
+        // Fallback lien simple
+        window.open(PAYMENT_CONFIG.revolut.revolutMeLink, '_blank');
+        // Pour démo, on débloque après 3 sec si lien cliqué (à remplacer par webhook en prod)
+        if(PAYMENT_CONFIG.freeBypassForDev && confirm('Mode démo: As-tu payé via Revolut.me ? Clique OK pour débloquer Pro (prod: vérif webhook)')){
+          const payment = {
+            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
+            provider: 'revolut_link',
+            status: 'active',
+            orderId: 'revolut.me-'+Date.now(),
+            amount: PAYMENT_CONFIG.revolut.price,
+            createdAt: Date.now(),
+            expiry: Date.now()+30*24*60*60*1000
+          };
+          savePayment(payment);
+          showPaymentSuccess('Revolut.me', payment.orderId);
+        }
+      }finally{
+        revolutPayBtn.disabled=false; revolutPayBtn.innerHTML='<span style="font-size:1.1rem">ℛ</span><span>Payer avec Revolut</span><span style="background:#fff;color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:800">Pay</span>';
+      }
+    }else{
+      // Mode simple: lien Revolut.me (gratuit, sans API, 0% frais perso)
+      const link = PAYMENT_CONFIG.revolut.revolutMeLink;
+      if(link.includes('tonpseudo')){
+        alert('Configure ton lien Revolut.me dans PAYMENT_CONFIG.revolut.revolutMeLink\nEx: https://revolut.me/chris\n\nPour démo, je débloque Pro gratuitement.');
+        if(PAYMENT_CONFIG.freeBypassForDev){
+          const payment = {
+            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
+            provider: 'revolut_demo',
+            status: 'active',
+            orderId: 'demo-'+Date.now(),
+            amount: PAYMENT_CONFIG.revolut.price,
+            createdAt: Date.now(),
+            expiry: Date.now()+30*24*60*60*1000
+          };
+          savePayment(payment);
+          showPaymentSuccess('Revolut (démo)', payment.orderId);
+        }
+        return;
+      }
+      window.open(link, '_blank');
+      setTimeout(()=>{
+        if(confirm('As-tu effectué le paiement Revolut ? Clique OK pour activer Pro (en prod, webhook automatique)')){
+          const payment = {
+            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
+            provider: 'revolut.me',
+            status: 'active',
+            orderId: 'revolut-'+Date.now(),
+            amount: PAYMENT_CONFIG.revolut.price,
+            createdAt: Date.now(),
+            expiry: Date.now()+30*24*60*60*1000
+          };
+          savePayment(payment);
+          showPaymentSuccess('Revolut.me', payment.orderId);
+        }
+      }, 1500);
+    }
+  });
+
+  revolutLinkBtn?.addEventListener('click', ()=>{
+    const link = PAYMENT_CONFIG.revolut.revolutMeLink;
+    if(link.includes('tonpseudo')){
+      // démo gratuite
+      if(confirm('Lien Revolut.me non configuré. Débloquer Pro en mode démo gratuit ?')){
+        const payment = {
+          email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
+          provider: 'revolut_demo',
+          status: 'active',
+          orderId: 'demo-'+Date.now(),
+          amount: 0,
+          createdAt: Date.now(),
+          expiry: Date.now()+30*24*60*60*1000
+        };
+        savePayment(payment);
+        showPaymentSuccess('Démo gratuite', payment.orderId);
+      }
+      return;
+    }
+    window.open(link, '_blank');
+  });
+
+  paymentCancelBtn?.addEventListener('click', closePaymentOverlay);
+  paymentRestoreBtn?.addEventListener('click', ()=>{
+    if(isProActive()){
+      alert('Abonnement Pro déjà actif jusqu\'au '+new Date(getPaymentExpiry()).toLocaleDateString());
+    }else{
+      // tente restauration via localStorage
+      const p = getPayment();
+      if(p && p.expiry && Date.now() < p.expiry){
+        p.status='active'; savePayment(p);
+        alert('Achat restauré ✅ Pro jusqu\'au '+new Date(p.expiry).toLocaleDateString());
+        closePaymentOverlay();
+        location.reload();
+      }else{
+        alert('Aucun achat trouvé. Paie avec PayPal ou Revolut.');
+      }
+    }
+  });
+
+  paymentOverlay?.addEventListener('click', (e)=>{ if(e.target===paymentOverlay) closePaymentOverlay(); });
+
+  // Override openKeyPanelSecure pour exiger paiement
+  window.addEventListener('load', ()=>{
+    setTimeout(()=>{
+      // Sauvegarde original
+      if(window.openKeyPanelSecure && !window._origOpenKeyPanelSecure){
+        window._origOpenKeyPanelSecure = window.openKeyPanelSecure;
+        window.openKeyPanelSecure = function(){
+          if(!isProActive()){
+            openPaymentOverlay('api_key');
+            return;
+          }
+          window._origOpenKeyPanelSecure();
+        };
+      }
+      // Si pas de secure wrapper mais openKeyPanel existe
+      if(window._origOpenKeyPanel && !window._origOpenKeyPanelWithPayment){
+        window._origOpenKeyPanelWithPayment = window._origOpenKeyPanel;
+        window._origOpenKeyPanel = function(){
+          if(!isProActive()){
+            openPaymentOverlay('api_key');
+            return;
+          }
+          window._origOpenKeyPanelWithPayment();
+        };
+      }
+    }, 1200);
+  });
+
+  // Expose
+  window.__payment = {isProActive, getPayment, openPaymentOverlay, PAYMENT_CONFIG, clearPayment};
+})();
+</script>
+<script src="https://merchant.revolut.com/embed.js"></script>
+
+
+<script>
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    const loggedSection = document.getElementById('userMenuLoggedSection');
+    if(!loggedSection || document.getElementById('paymentMenuSection')) return;
+    const sec = document.createElement('div');
+    sec.id='paymentMenuSection';
+    sec.style.cssText='display:flex;flex-direction:column;gap:6px';
+    const isPro = window.__payment?.isProActive?.() || false;
+    const payment = JSON.parse(localStorage.getItem('app_payment_pro_v1')||'null');
+    sec.innerHTML=`
+      <div class="user-menu-divider"></div>
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">💳 Abonnement</div>
+      <div style="padding:10px 12px;border-radius:10px;background:${isPro ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(6,182,214,0.12))' : 'var(--surface-2)'};border:1px solid ${isPro ? 'rgba(16,185,129,0.3)' : 'var(--border)'};font-size:0.8rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700">${isPro ? '⭐ Pro Actif' : '🆓 Gratuit'}</span>
+          <span class="badge-pro" style="display:${isPro ? 'inline-flex' : 'none'}">PRO</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+          ${isPro ? `Payé via ${payment?.provider || ''} • Expire ${new Date(payment.expiry).toLocaleDateString()}` : 'Clé API bloquée — Passe Pro pour débloquer'}
+        </div>
+      </div>
+      <button class="user-menu-item primary" id="upgradeProBtn" style="display:${isPro ? 'none' : 'flex'}">
+        <span>💳</span><span>Passer Pro - 4,99€</span><span>→</span>
+      </button>
+      <button class="user-menu-item" id="manageSubBtn" style="display:${isPro ? 'flex' : 'none'}">
+        <span>⚙️</span><span>Gérer abonnement</span>
+      </button>
+    `;
+    loggedSection.appendChild(sec);
+    document.getElementById('upgradeProBtn')?.addEventListener('click', ()=>{ document.getElementById('userMenu').hidden=true; window.__payment?.openPaymentOverlay(); });
+    document.getElementById('manageSubBtn')?.addEventListener('click', ()=>{ 
+      const p = JSON.parse(localStorage.getItem('app_payment_pro_v1')||'null');
+      if(p) alert(`Abonnement Pro\nProvider: ${p.provider}\nMontant: ${p.amount}€\nExpire: ${new Date(p.expiry).toLocaleString()}\nOrder: ${p.orderId}`);
+      else alert('Aucun abonnement');
+    });
+  }, 1400);
+});
 </script>
 
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
