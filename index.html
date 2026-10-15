@@ -980,7 +980,11 @@ main{position:relative}
 .burger-list{display:flex;flex-direction:column;padding:8px}
 .burger-item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:10px;border:none;background:transparent;color:var(--text);font-size:0.9rem;font-weight:500;cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:background 0.2s}
 .burger-item:hover{background:var(--surface-2)}
-.burger-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0}
+.burger-icon{font-size:1.15rem;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;}
+.burger-item span:last-child{flex:1;text-align:left;display:flex;align-items:center;}
+.burger-item{gap:12px !important; justify-content:flex-start !important;}
+.burger-list .burger-item{padding-left:14px !important;}
+
 
 
 /* --- Vortex selector overlay --- */
@@ -2125,7 +2129,7 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
     <div class="burger-header"><span>☰ Menu</span><button type="button" id="burgerClose" class="burger-close">✕</button></div>
     <div class="burger-list">
 <button type="button" class="burger-item" id="burgerThemeBtn"><span class="burger-icon" id="burgerThemeIcon">🌙</span><span id="burgerThemeLabel">Mode sombre / clair</span></button>
-      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon">📍</span><span>Ma position précise</span></button>
+      <button type="button" class="burger-item" id="burgerLocBtn"><span class="burger-icon"><span class="loc-menu-pastille off"></span></span><span>Ma position précise</span></button>
       <button type="button" class="burger-item" id="burgerKeyBtn"><span class="burger-icon">🔑</span><span>Clé API</span></button>
       <button type="button" class="burger-item" id="burgerVortexBtn"><span class="burger-icon">🌌</span><span>Vortex</span></button>
     </div>
@@ -2938,13 +2942,13 @@ function updateLocationUI(){
   const btn = document.getElementById('burgerLocBtn');
   if(btn){
     if(locationStatus==='loading'){
-      btn.innerHTML=`<span class="loc-menu-pastille loading"></span><span>Recherche GPS en cours...</span>`;
+      btn.innerHTML=`<span class="burger-icon"><span class="loc-menu-pastille loading"></span></span><span>Recherche GPS en cours...</span>`;
     } else if(locationEnabled && userLocation && locationStatus==='success'){
-      btn.innerHTML=`<span class="loc-menu-pastille on"></span><span>Position active: ${userLocation.ville} — ON</span>`;
+      btn.innerHTML=`<span class="burger-icon"><span class="loc-menu-pastille on"></span></span><span>Position active: ${userLocation.ville} — ON</span>`;
     } else if(locationEnabled){
-      btn.innerHTML=`<span class="loc-menu-pastille idle"></span><span>Localisation ON — pas de position</span>`;
+      btn.innerHTML=`<span class="burger-icon"><span class="loc-menu-pastille idle"></span></span><span>Localisation ON — pas de position</span>`;
     } else {
-      btn.innerHTML=`<span class="loc-menu-pastille off"></span><span>Localisation OFF</span>`;
+      btn.innerHTML=`<span class="burger-icon"><span class="loc-menu-pastille off"></span></span><span>Localisation OFF</span>`;
     }
   }
   updateLocationToggleUI();
