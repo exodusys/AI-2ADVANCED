@@ -1997,235 +1997,123 @@ body:has(.vortex-overlay:not([hidden])){ overflow:hidden; }
 </style>
 
 <style>
-/* === AUTH & USER MENU - NEW === */
-.user-account-btn{
-  width:44px;height:44px;border-radius:50%;
+/* === APPLE STORE + PLAY STORE - ABONNEMENTS === */
+.store-overlay{
+  position:fixed;inset:0;z-index:103;
+  background:rgba(0,0,0,0.82);backdrop-filter:blur(24px);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.15rem;padding:0;
-  background:var(--surface-2);border:1px solid var(--border);
-  color:var(--text);cursor:pointer;flex-shrink:0;
-  transition:all 0.2s;position:relative;overflow:hidden;
+  padding:12px;overflow-y:auto;
 }
-.user-account-btn:hover{transform:translateY(-1px);border-color:var(--border-strong)}
-.user-account-btn.logged-in{
-  background:linear-gradient(135deg,#3b82f6,#8b5cf6);
-  color:#fff;border-color:transparent;
-  font-weight:700;font-size:0.95rem;
+.store-overlay[hidden]{display:none !important}
+.store-panel{
+  width:min(560px,100%);background:var(--surface-solid);
+  border:1px solid var(--border);border-radius:24px;
+  box-shadow:0 32px 100px rgba(0,0,0,0.7);overflow:hidden;
+  animation:messageIn 0.42s cubic-bezier(0.16,1,0.3,1);
+  max-height:96vh;overflow-y:auto;
 }
-.user-account-btn .avatar-letter{font-size:0.9rem}
-.user-account-btn.has-notification::after{
-  content:'';position:absolute;top:2px;right:2px;width:10px;height:10px;
-  background:#ef4444;border-radius:50%;border:2px solid var(--surface-solid);
+.store-header{
+  padding:24px 24px 0;text-align:center;position:sticky;top:0;
+  background:var(--surface-solid);z-index:2;
 }
+.store-header .store-icon{font-size:2.6rem;margin-bottom:10px}
+.store-header h2{font-size:1.5rem;font-weight:800;margin:0 0 6px;letter-spacing:-0.3px}
+.store-header p{font-size:0.86rem;color:var(--text-muted);margin:0;line-height:1.4}
+.store-badges{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.store-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+  border:1px solid var(--border);background:var(--surface-2);
+}
+.store-badge.apple{background:#000;color:#fff;border-color:#000}
+.store-badge.google{background:#fff;color:#000;border-color:#e5e7eb}
+.store-badge.trial{background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;border-color:transparent}
+
+.store-plans{padding:18px 18px 0;display:flex;flex-direction:column;gap:10px}
+.store-plan{
+  position:relative;display:flex;align-items:center;gap:14px;
+  padding:16px;border-radius:16px;border:2px solid var(--border);
+  background:var(--surface-2);cursor:pointer;transition:all 0.22s;
+  text-align:left;width:100%;font-family:inherit;color:var(--text);
+}
+.store-plan:hover{transform:translateY(-1px);border-color:var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+.store-plan.selected{
+  border-color:#3b82f6;background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(139,92,246,0.12));
+  box-shadow:0 0 0 3px rgba(59,130,246,0.15);
+}
+.store-plan.popular::before{
+  content:'⭐ POPULAIRE';position:absolute;top:-10px;right:14px;
+  background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;
+  font-size:0.65rem;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:0.4px;
+}
+.store-plan.lifetime{
+  background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(239,68,68,0.08));
+  border-color:rgba(245,158,11,0.35);
+}
+.store-plan.lifetime.selected{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.18)}
+.store-plan-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;background:var(--surface-solid);border:1px solid var(--border)}
+.store-plan.selected .store-plan-icon{background:var(--text);color:var(--bg)}
+.store-plan-info{flex:1;min-width:0}
+.store-plan-title{font-weight:700;font-size:0.92rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.store-plan-desc{font-size:0.76rem;color:var(--text-muted);margin-top:2px;line-height:1.3}
+.store-plan-price{text-align:right;flex-shrink:0}
+.store-plan-price .price{font-weight:800;font-size:1.15rem}
+.store-plan-price .period{font-size:0.7rem;color:var(--text-muted)}
+.store-plan-price .save{font-size:0.68rem;font-weight:700;color:#10b981;background:rgba(16,185,129,0.12);padding:2px 6px;border-radius:6px;margin-top:4px;display:inline-block}
+
+.store-trial-box{
+  margin:16px 18px 0;padding:12px 14px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(6,182,214,0.12));
+  border:1px solid rgba(16,185,129,0.28);display:flex;gap:10px;align-items:flex-start;
+}
+.store-trial-box .icon{font-size:1.3rem;flex-shrink:0}
+.store-trial-box .text{font-size:0.8rem;line-height:1.4}
+.store-trial-box .text strong{color:#10b981}
+
+.store-actions{padding:18px;display:flex;flex-direction:column;gap:10px}
+.store-btn{
+  width:100%;padding:16px;border-radius:14px;border:none;
+  font-weight:800;font-size:0.95rem;cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.store-btn.primary{background:var(--text);color:var(--bg);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+.store-btn.primary:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(0,0,0,0.25)}
+.store-btn.apple{background:#000;color:#fff}
+.store-btn.google{background:#fff;color:#000;border:1px solid #e5e7eb}
+.store-btn.secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.store-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important}
+
+.store-footer{padding:0 18px 18px;text-align:center;font-size:0.7rem;color:var(--text-muted);line-height:1.4}
+.store-footer a{color:var(--text);text-decoration:underline}
+
+.store-restore{font-size:0.78rem;color:var(--text-muted);text-align:center;margin-top:4px}
+.store-restore button{background:none;border:none;color:var(--text);text-decoration:underline;cursor:pointer;font-size:0.78rem;font-weight:600}
+
+.user-account-btn{
+  width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  cursor:pointer;flex-shrink:0;transition:all 0.2s;position:relative;
+}
+.user-account-btn.pro{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border-color:transparent;font-weight:700}
+.user-account-btn.trial::after{
+  content:'';position:absolute;top:-2px;right:-2px;width:12px;height:12px;
+  background:#10b981;border-radius:50%;border:2px solid var(--surface-solid);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
 .user-menu{
-  position:fixed;top:72px;right:12px;z-index:96;
-  width:min(340px,calc(100vw - 24px));
-  background:var(--surface-solid);border:1px solid var(--border);
-  border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.4);
-  overflow:hidden;animation:messageIn 0.22s cubic-bezier(0.16,1,0.3,1);
+  position:fixed;top:72px;right:12px;z-index:96;width:min(360px,calc(100vw - 24px));
+  background:var(--surface-solid);border:1px solid var(--border);border-radius:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);overflow:hidden;animation:messageIn 0.22s;
 }
 .user-menu[hidden]{display:none !important}
-.user-menu-header{
-  padding:16px 16px 14px;display:flex;gap:12px;align-items:center;
-  border-bottom:1px solid var(--border);
-  background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));
-}
-.user-menu-avatar{
-  width:44px;height:44px;border-radius:50%;
-  background:linear-gradient(135deg,#3b82f6,#8b5cf6);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:700;font-size:1.1rem;flex-shrink:0;
-}
-.user-menu-info{flex:1;min-width:0}
-.user-menu-email{font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-menu-status{font-size:0.75rem;margin-top:2px;display:flex;align-items:center;gap:6px}
-.status-verified{color:#10b981}
-.status-unverified{color:#f59e0b}
-.user-menu-body{padding:10px;display:flex;flex-direction:column;gap:6px}
-.user-menu-item{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 12px;border-radius:10px;border:1px solid transparent;
-  background:var(--surface-2);color:var(--text);
-  font-size:0.88rem;font-weight:500;cursor:pointer;
-  transition:all 0.18s;text-align:left;width:100%;font-family:inherit;
-}
+.user-menu-header{padding:16px;display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08))}
+.user-menu-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0}
+.user-menu-body{padding:10px;display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto}
+.user-menu-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1px solid transparent;background:var(--surface-2);color:var(--text);font-size:0.88rem;font-weight:500;cursor:pointer;width:100%;text-align:left;transition:all 0.18s}
 .user-menu-item:hover{background:var(--surface-3);border-color:var(--border);transform:translateY(-1px)}
-.user-menu-item.danger{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.18);color:#ef4444}
 .user-menu-item.primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border-color:transparent}
-.user-menu-divider{height:1px;background:var(--border);margin:6px 0}
-.user-menu-footer{padding:10px 16px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text-muted);text-align:center}
-
-/* Auth overlay */
-.auth-overlay{
-  position:fixed;inset:0;z-index:100;
-  background:rgba(0,0,0,0.68);backdrop-filter:blur(18px);
-  display:flex;align-items:center;justify-content:center;
-  padding:16px;overflow-y:auto;
-}
-.auth-overlay[hidden]{display:none !important}
-.auth-panel{
-  width:min(420px,100%);background:var(--surface-solid);
-  border:1px solid var(--border);border-radius:22px;
-  box-shadow:0 24px 80px rgba(0,0,0,0.5);
-  overflow:hidden;animation:messageIn 0.35s cubic-bezier(0.16,1,0.3,1);
-}
-.auth-header{
-  padding:20px 20px 0;text-align:center;
-}
-.auth-header h2{font-size:1.35rem;font-weight:800;margin:0 0 6px}
-.auth-header p{font-size:0.85rem;color:var(--text-muted);margin:0;line-height:1.4}
-.auth-tabs{display:flex;gap:8px;padding:16px 20px 0}
-.auth-tab{
-  flex:1;padding:10px 12px;border-radius:10px;
-  border:1px solid var(--border);background:var(--surface-2);
-  font-weight:600;font-size:0.88rem;cursor:pointer;
-  color:var(--text-muted);transition:all 0.2s;
-}
-.auth-tab.active{
-  background:var(--text);color:var(--bg);
-  border-color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,0.15);
-}
-.auth-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px}
-.auth-field{display:flex;flex-direction:column;gap:6px}
-.auth-field label{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
-.auth-input{
-  width:100%;padding:12px 14px;border-radius:11px;
-  border:1px solid var(--border);background:var(--surface-2);
-  color:var(--text);font-size:0.92rem;font-family:inherit;
-  transition:all 0.2s;outline:none;
-}
-.auth-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.18)}
-.auth-input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.15)}
-.auth-error{
-  font-size:0.8rem;color:#ef4444;background:rgba(239,68,68,0.1);
-  border:1px solid rgba(239,68,68,0.18);padding:9px 11px;border-radius:9px;
-  display:none;line-height:1.4;
-}
-.auth-error.show{display:block}
-.auth-success{
-  font-size:0.8rem;color:#10b981;background:rgba(16,185,129,0.1);
-  border:1px solid rgba(16,185,129,0.18);padding:9px 11px;border-radius:9px;
-  display:none;line-height:1.4;
-}
-.auth-success.show{display:block}
-.auth-btn{
-  width:100%;padding:13px 16px;border-radius:11px;
-  border:none;font-weight:700;font-size:0.92rem;cursor:pointer;
-  transition:all 0.2s;font-family:inherit;
-}
-.auth-btn.primary{background:var(--text);color:var(--bg)}
-.auth-btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.2)}
-.auth-btn.secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
-.auth-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important}
-.auth-footer{padding:0 20px 18px;text-align:center;font-size:0.75rem;color:var(--text-muted);line-height:1.4}
-.auth-footer a{color:var(--text);text-decoration:underline}
-
-/* Verify overlay */
-.verify-overlay{
-  position:fixed;inset:0;z-index:101;
-  background:rgba(0,0,0,0.72);backdrop-filter:blur(20px);
-  display:flex;align-items:center;justify-content:center;
-  padding:16px;
-}
-.verify-overlay[hidden]{display:none !important}
-.verify-panel{
-  width:min(400px,100%);background:var(--surface-solid);
-  border:1px solid var(--border);border-radius:20px;
-  box-shadow:0 24px 80px rgba(0,0,0,0.5);overflow:hidden;
-  animation:messageIn 0.32s cubic-bezier(0.16,1,0.3,1);
-}
-.verify-header{padding:18px 20px 0;text-align:center}
-.verify-header .verify-icon{font-size:2.2rem;margin-bottom:8px}
-.verify-header h3{font-size:1.15rem;font-weight:800;margin:0 0 6px}
-.verify-header p{font-size:0.84rem;color:var(--text-muted);line-height:1.4;margin:0}
-.verify-header .email-highlight{color:var(--text);font-weight:600;word-break:break-all}
-.verify-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
-.code-inputs{display:flex;gap:8px;justify-content:center}
-.code-input{
-  width:44px;height:52px;text-align:center;
-  font-size:1.3rem;font-weight:700;
-  border-radius:11px;border:1px solid var(--border);
-  background:var(--surface-2);color:var(--text);
-  outline:none;transition:all 0.2s;
-}
-.code-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.18)}
-.code-input.filled{border-color:#10b981;background:rgba(16,185,129,0.08)}
-.verify-actions{display:flex;flex-direction:column;gap:8px}
-.verify-meta{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:var(--text-muted);padding:0 2px}
-.verify-meta button{background:none;border:none;color:var(--text);font-weight:600;cursor:pointer;text-decoration:underline;font-size:0.78rem}
-.verify-meta button:disabled{opacity:0.4;cursor:not-allowed;text-decoration:none}
-.demo-code-box{
-  background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));
-  border:1px dashed rgba(59,130,246,0.35);padding:10px 12px;border-radius:10px;
-  font-size:0.8rem;line-height:1.4;text-align:center;
-}
-.demo-code{font-family:monospace;font-weight:800;font-size:1.1rem;letter-spacing:2px;color:#3b82f6}
-
-/* Responsive */
-@media (max-width: 600px){
-  .auth-panel{border-radius:16px}
-  .code-input{width:38px;height:46px;font-size:1.15rem}
-  .user-menu{top:68px;right:8px;width:calc(100vw - 16px)}
-}
-</style>
-
-<style>
-/* === PAYMENT PAYPAL + REVOLUT === */
-.payment-overlay{
-  position:fixed;inset:0;z-index:102;
-  background:rgba(0,0,0,0.78);backdrop-filter:blur(22px);
-  display:flex;align-items:center;justify-content:center;
-  padding:16px;overflow-y:auto;
-}
-.payment-overlay[hidden]{display:none !important}
-.payment-panel{
-  width:min(520px,100%);background:var(--surface-solid);
-  border:1px solid var(--border);border-radius:22px;
-  box-shadow:0 28px 90px rgba(0,0,0,0.6);overflow:hidden;
-  animation:messageIn 0.38s cubic-bezier(0.16,1,0.3,1);
-}
-.payment-header{padding:22px 22px 0;text-align:center}
-.payment-header h2{font-size:1.4rem;font-weight:800;margin:0 0 6px}
-.payment-header p{font-size:0.85rem;color:var(--text-muted);margin:0;line-height:1.4}
-.payment-plans{display:flex;gap:10px;padding:18px 18px 0}
-.plan-card{
-  flex:1;padding:14px;border-radius:14px;border:1px solid var(--border);
-  background:var(--surface-2);text-align:center;transition:all 0.2s;
-}
-.plan-card.pro{
-  background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(139,92,246,0.12));
-  border-color:rgba(59,130,246,0.35);transform:scale(1.02);
-}
-.plan-card h4{margin:0 0 4px;font-size:0.95rem;font-weight:700}
-.plan-card .price{font-size:1.6rem;font-weight:800;margin:6px 0}
-.plan-card .price span{font-size:0.8rem;font-weight:500;color:var(--text-muted)}
-.plan-card ul{list-style:none;padding:0;margin:10px 0 0;text-align:left;font-size:0.78rem;line-height:1.5;color:var(--text-muted)}
-.plan-card ul li::before{content:'✓ ';color:#10b981;font-weight:700}
-.payment-body{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
-.payment-divider{display:flex;align-items:center;gap:8px;margin:4px 0}
-.payment-divider::before,.payment-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.payment-divider span{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
-.paypal-container{min-height:50px}
-.revolut-btn{
-  width:100%;padding:14px 16px;border-radius:12px;border:none;
-  background:#000;color:#fff;font-weight:700;font-size:0.92rem;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-  transition:all 0.2s;
-}
-.revolut-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}
-.revolut-btn img{height:20px}
-.payment-footer{padding:0 22px 18px;text-align:center;font-size:0.72rem;color:var(--text-muted);line-height:1.4}
-.payment-success{
-  background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,214,0.15));
-  border:1px solid rgba(16,185,129,0.3);padding:14px;border-radius:12px;
-  text-align:center;display:none;
-}
-.payment-success.show{display:block}
-.badge-pro{
-  display:inline-flex;align-items:center;gap:4px;
-  background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;
-  padding:3px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;letter-spacing:0.3px;
-}
+.user-menu-item.pro{background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(6,182,214,0.12));border-color:rgba(16,185,129,0.3)}
 </style>
 
 </head>
@@ -3934,1488 +3822,579 @@ document.getElementById('clearBtn')?.addEventListener('click', clearConversation
 document.getElementById('saveBtn')?.addEventListener('click', saveConversation);
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
-<!-- === USER ACCOUNT BUTTON REPLACEMENT (will be injected via JS if slot exists) === -->
-<!-- Auth Overlay - Login / Register -->
-<div class="auth-overlay" id="authOverlay" hidden>
-  <div class="auth-panel">
-    <div class="auth-header">
-      <div style="font-size:2.4rem;margin-bottom:8px">🔐</div>
-      <h2 id="authTitle">Connexion</h2>
-      <p id="authSubtitle">Connecte-toi pour accéder à ton assistant et sécuriser ta clé API</p>
-    </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabLogin">Connexion</button>
-      <button class="auth-tab" id="tabRegister">Inscription</button>
-    </div>
-    <div class="auth-body">
-      <div class="auth-error" id="authError"></div>
-      <div class="auth-success" id="authSuccess"></div>
-      
-      <div class="auth-field">
-        <label for="authEmail">E-mail</label>
-        <input class="auth-input" type="email" id="authEmail" placeholder="toi@exemple.com" autocomplete="email" />
-      </div>
-      <div class="auth-field">
-        <label for="authPassword">Mot de passe</label>
-        <input class="auth-input" type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
-      </div>
-      <div class="auth-field" id="confirmPasswordField" style="display:none">
-        <label for="authConfirm">Confirmer mot de passe</label>
-        <input class="auth-input" type="password" id="authConfirm" placeholder="••••••••" autocomplete="new-password" />
-      </div>
-      
-      <button class="auth-btn primary" id="authSubmitBtn">Se connecter</button>
-      <button class="auth-btn secondary" id="authGuestBtn" style="display:none">Continuer sans compte (démo)</button>
-    </div>
-    <div class="auth-footer">
-      ✅ 100% gratuit & offline — Tes données restent dans ton navigateur, aucun serveur.<br/>
-      En prod, remplace par un vrai backend e-mail.<br/>
-      <span id="authFooterInfo"></span>
-    </div>
-  </div>
-</div>
+<!-- BOUTON COMPTE EN HAUT DROITE -->
+<script>
+(function(){
+  // Injecte bouton compte si slot existe
+  function injectAccountBtn(){
+    const slot = document.getElementById('futureLogoSlot');
+    if(!slot || document.getElementById('userAccountBtn')) return;
+    const btn = document.createElement('button');
+    btn.id='userAccountBtn';
+    btn.className='user-account-btn';
+    btn.title='Mon compte';
+    btn.innerHTML='<span id="userAvatar">👤</span>';
+    slot.replaceWith(btn);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', injectAccountBtn);
+  else injectAccountBtn();
+  setTimeout(injectAccountBtn, 500);
+})();
+</script>
 
-<!-- Verify Code Overlay -->
-<div class="verify-overlay" id="verifyOverlay" hidden>
-  <div class="verify-panel">
-    <div class="verify-header">
-      <div class="verify-icon">📧</div>
-      <h3 id="verifyTitle">Vérifie ton e-mail</h3>
-      <p id="verifyDesc">Nous avons envoyé un code à <span class="email-highlight" id="verifyEmailDisplay">ton e-mail</span></p>
-    </div>
-    <div class="verify-body">
-      <div class="auth-error" id="verifyError"></div>
-      <div class="auth-success" id="verifySuccess"></div>
-      
-      <div class="code-inputs" id="codeInputs">
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="0" />
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="1" />
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="2" />
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="3" />
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="4" />
-        <input class="code-input" maxlength="1" inputmode="numeric" data-index="5" />
-      </div>
-      
-      <div class="demo-code-box" id="demoCodeBox">
-        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">✅ MODE GRATUIT - Code généré localement (0€, sans e-mail)</div>
-        <div class="demo-code" id="demoCodeDisplay">------</div>
-        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Expire dans <span id="codeExpireTimer">10:00</span></div>
-      </div>
-      
-      <div class="verify-actions">
-        <button class="auth-btn primary" id="verifySubmitBtn">Vérifier le code</button>
-        <div class="verify-meta">
-          <button id="verifyResendBtn">Renvoyer le code</button>
-          <span id="verifyPurposeLabel" style="font-size:0.72rem;opacity:0.8">pour création de compte</span>
-        </div>
-        <button class="auth-btn secondary" id="verifyCancelBtn">Annuler</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- User Menu Dropdown -->
+<!-- MENU COMPTE STORE -->
 <div class="user-menu" id="userMenu" hidden>
   <div class="user-menu-header">
-    <div class="user-menu-avatar" id="userMenuAvatar">U</div>
-    <div class="user-menu-info">
-      <div class="user-menu-email" id="userMenuEmail">Non connecté</div>
-      <div class="user-menu-status" id="userMenuStatus"><span>●</span> Non connecté</div>
+    <div class="user-menu-avatar" id="userMenuAvatar">👤</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:0.92rem" id="userMenuEmail">Invité</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;gap:6px" id="userMenuStatus">● Gratuit</div>
+      <div id="userMenuTrialBadge" style="margin-top:4px;display:none"><span style="background:#10b981;color:#fff;padding:2px 6px;border-radius:6px;font-size:0.65rem;font-weight:700">🎁 ESSAI 3 JOURS</span></div>
     </div>
   </div>
   <div class="user-menu-body">
-    <button class="user-menu-item primary" id="userMenuApiBtn">
-      <span>🔑</span>
-      <span style="flex:1;text-align:left"><span id="userMenuApiLabel">Gérer ma clé API</span><br/><span style="font-size:0.72rem;opacity:0.85" id="userMenuApiSub">Accès protégé par code e-mail</span></span>
-      <span>→</span>
+    <div id="storeStatusCard" style="padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);font-size:0.8rem;line-height:1.4">
+      <div style="font-weight:700;margin-bottom:4px">📦 Abonnement</div>
+      <div id="storeStatusText" style="color:var(--text-muted)">Aucun abonnement actif</div>
+      <div id="storeExpiryText" style="font-size:0.7rem;margin-top:4px;opacity:0.8"></div>
+    </div>
+    
+    <button class="user-menu-item primary" id="userMenuUpgradeBtn">
+      <span>💳</span><span style="flex:1">Voir les offres - Essai 3j gratuit</span><span>→</span>
     </button>
-    
-    <div id="userMenuLoggedSection" style="display:flex;flex-direction:column;gap:6px">
-      <div class="user-menu-divider"></div>
-      <button class="user-menu-item" id="userMenuProfileBtn">
-        <span>👤</span><span>Mon profil</span>
-      </button>
-      <button class="user-menu-item" id="userMenuChangePwdBtn">
-        <span>🔒</span><span>Changer mot de passe</span>
-      </button>
-      <button class="user-menu-item" id="userMenuSecurityBtn">
-        <span>🛡️</span>
-        <span style="flex:1">Sécurité API<br/><span id="apiAccessStatusLabel" style="font-size:0.72rem;opacity:0.7">Non vérifié</span></span>
-      </button>
-      <div class="user-menu-divider"></div>
-      <button class="user-menu-item danger" id="userMenuLogoutBtn">
-        <span>🚪</span><span>Déconnexion</span>
-      </button>
-    </div>
-    
-    <div id="userMenuGuestSection" style="display:flex;flex-direction:column;gap:6px">
-      <button class="user-menu-item" id="userMenuLoginBtn">
-        <span>🔐</span><span>Se connecter / S'inscrire</span>
-      </button>
-    </div>
+    <button class="user-menu-item" id="userMenuRestoreBtn">
+      <span>🔄</span><span>Restaurer mes achats</span>
+    </button>
+    <button class="user-menu-item" id="userMenuManageBtn">
+      <span>⚙️</span><span>Gérer abonnement (Store)</span>
+    </button>
+    <div style="height:1px;background:var(--border);margin:6px 0"></div>
+    <button class="user-menu-item" id="userMenuApiBtn">
+      <span>🔑</span><span>Clé API</span>
+    </button>
+    <button class="user-menu-item" id="userMenuLogoutBtn" style="color:#ef4444;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2)">
+      <span>🚪</span><span>Déconnexion</span>
+    </button>
   </div>
-  <div class="user-menu-footer">
-    <span id="userMenuFooterText">Clé API chiffrée localement • Code e-mail requis</span>
+  <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:0.68rem;color:var(--text-muted);text-align:center">
+    Paiement sécurisé Apple Store & Play Store • Essai 3j gratuit
+  </div>
+</div>
+
+<!-- OVERLAY ABONNEMENTS APP STORE / PLAY STORE -->
+<div class="store-overlay" id="storeOverlay" hidden>
+  <div class="store-panel">
+    <div class="store-header">
+      <div class="store-icon">🚀</div>
+      <h2>Passe en Pro</h2>
+      <p id="storeSubtitle">Essai gratuit 3 jours, puis choisis ton plan. Annulable à tout moment dans l'App Store ou Play Store.</p>
+      <div class="store-badges">
+        <span class="store-badge apple"> App Store</span>
+        <span class="store-badge google">▶ Play Store</span>
+        <span class="store-badge trial">🎁 3 jours offerts</span>
+      </div>
+    </div>
+
+    <div class="store-trial-box">
+      <div class="icon">🎁</div>
+      <div class="text">
+        <strong>Essai gratuit 3 jours</strong> inclus sur mensuel et annuel.<br/>
+        <span style="color:var(--text-muted)">Aucun prélèvement avant 3 jours. Annule dans Réglages > Abonnements si tu changes d'avis.</span>
+      </div>
+    </div>
+
+    <div class="store-plans" id="storePlans">
+      <!-- Mensuel -->
+      <button class="store-plan" data-product="monthly" id="planMonthly">
+        <div class="store-plan-icon">📅</div>
+        <div class="store-plan-info">
+          <div class="store-plan-title">Mensuel <span style="background:var(--surface-3);padding:2px 6px;border-radius:6px;font-size:0.65rem">ESSAI 3J</span></div>
+          <div class="store-plan-desc">Facturé chaque mois après l'essai • Annulable à tout moment</div>
+        </div>
+        <div class="store-plan-price">
+          <div class="price">4,99€</div>
+          <div class="period">/mois</div>
+        </div>
+      </button>
+
+      <!-- Annuel -->
+      <button class="store-plan popular selected" data-product="annual" id="planAnnual">
+        <div class="store-plan-icon">🏆</div>
+        <div class="store-plan-info">
+          <div class="store-plan-title">Annuel</div>
+          <div class="store-plan-desc">3 jours d'essai gratuit • Puis 1 an complet • Meilleure offre</div>
+        </div>
+        <div class="store-plan-price">
+          <div class="price">39,99€</div>
+          <div class="period">/an</div>
+          <div class="save">-33% • 3,33€/mois</div>
+        </div>
+      </button>
+
+      <!-- Vie -->
+      <button class="store-plan lifetime" data-product="lifetime" id="planLifetime">
+        <div class="store-plan-icon">♾️</div>
+        <div class="store-plan-info">
+          <div class="store-plan-title">Achat à vie <span style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:2px 6px;border-radius:6px;font-size:0.65rem">BEST DEAL</span></div>
+          <div class="store-plan-desc">Paiement unique • Accès à vie • Pas d'abonnement • Pas d'essai</div>
+        </div>
+        <div class="store-plan-price">
+          <div class="price">79,99€</div>
+          <div class="period">à vie</div>
+          <div class="save">Économise 160€</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="store-actions">
+      <button class="store-btn primary" id="storeSubscribeBtn">
+        <span>🎁</span><span id="storeSubscribeLabel">Commencer l'essai gratuit 3 jours</span>
+      </button>
+      
+      <div id="storePlatformButtons" style="display:flex;flex-direction:column;gap:8px">
+        <button class="store-btn apple" id="storeAppleBtn" style="display:none">
+          <span></span><span>Acheter avec App Store</span>
+        </button>
+        <button class="store-btn google" id="storeGoogleBtn" style="display:none">
+          <span>▶</span><span>Acheter avec Play Store</span>
+        </button>
+        <button class="store-btn secondary" id="storeWebBtn">
+          <span>💳</span><span>Continuer sur le web (démo)</span>
+        </button>
+      </div>
+
+      <div class="store-restore">
+        Déjà Pro ? <button id="storeRestoreBtn">Restaurer mes achats</button>
+      </div>
+    </div>
+
+    <div class="store-footer">
+      L'abonnement se renouvelle automatiquement. Annule à tout moment dans<br/>
+      <strong>Réglages → Abonnements</strong> sur iPhone ou Play Store sur Android.<br/>
+      <a href="#" id="storeTermsLink">Conditions</a> • <a href="#" id="storePrivacyLink">Confidentialité</a> • Paiement géré par Apple / Google<br/>
+      <span style="opacity:0.6">ID Produits: com.mistralchat.pro.monthly / annual / lifetime</span>
+    </div>
   </div>
 </div>
 
 
 <script>
-// === AUTH & API CODE VERIFICATION SYSTEM ===
+// ===== GESTION COMPTE APPLE STORE + PLAY STORE - ESSAI 3 JOURS / MENSUEL / ANNUEL / VIE =====
 (function(){
-  const AUTH_USERS_KEY = 'app_auth_users_v2';
-  const AUTH_CURRENT_KEY = 'app_auth_current_v2';
-  const AUTH_PENDING_KEY = 'app_auth_pending_v2';
-  const AUTH_API_VERIFIED_KEY = 'app_auth_api_verified_v2';
-  const CODE_EXPIRY_MS = 10 * 60 * 1000; // 10 min
-  const API_ACCESS_VALID_MS = 30 * 60 * 1000; // 30 min
+  const STORE_KEY = 'app_store_subscription_v2';
+  const TRIAL_DAYS = 3;
   
-  // Helpers
-  function getUsers(){ try{return JSON.parse(localStorage.getItem(AUTH_USERS_KEY)||'[]')}catch{return []} }
-  function saveUsers(u){ localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(u)); }
-  async function hashPassword(pwd){
-    try{
-      const enc = new TextEncoder().encode(pwd);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }catch{ // fallback simple
-      return btoa(pwd).split('').reverse().join('');
-    }
-  }
-  function generateCode(){ return Math.floor(100000 + Math.random()*900000).toString(); }
-  function getCurrentEmail(){ return localStorage.getItem(AUTH_CURRENT_KEY) || null; }
-  function getCurrentUser(){
-    const email = getCurrentEmail();
-    if(!email) return null;
-    return getUsers().find(u=>u.email.toLowerCase()===email.toLowerCase()) || null;
-  }
-  function isLoggedIn(){ return !!getCurrentUser(); }
-  function getPending(){ try{return JSON.parse(localStorage.getItem(AUTH_PENDING_KEY)||'null')}catch{return null} }
-  function setPending(p){ localStorage.setItem(AUTH_PENDING_KEY, JSON.stringify(p)); }
-  function clearPending(){ localStorage.removeItem(AUTH_PENDING_KEY); }
-  function getApiVerified(){
-    try{return JSON.parse(localStorage.getItem(AUTH_API_VERIFIED_KEY)||'{}')}catch{return {}}
-  }
-  function setApiVerified(email, until){
-    const map = getApiVerified();
-    map[email.toLowerCase()] = until;
-    localStorage.setItem(AUTH_API_VERIFIED_KEY, JSON.stringify(map));
-  }
-  function isApiAccessValid(email){
-    if(!email) return false;
-    const map = getApiVerified();
-    const until = map[email.toLowerCase()];
-    if(!until) return false;
-    return Date.now() < until;
-  }
-  function getApiAccessExpiry(email){
-    const map = getApiVerified();
-    return map[email?.toLowerCase()] || null;
-  }
-  
-  
-  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
-  const FREE_MODE = {
-    enabled: true,
-    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
-    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
-    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
-    allowGuest: false
-  };
-
-  
-  // ===== MODE 100% GRATUIT - AUCUN BACKEND, AUCUN FRAIS =====
-  const FREE_MODE = {
-    enabled: true,
-    autoVerifyEmail: false, // false = code local gratuit à saisir, true = vérif instantanée sans code
-    apiCodeValidityMin: 30, // durée validité code accès API (gratuit)
-    showCodeInUI: true, // affiche code directement dans l'UI (gratuit, pas besoin d'e-mail)
-    allowGuest: false
-  };
-
-  async function sendEmailCode(email, code, purpose){
-    // MODE GRATUIT : pas d'envoi e-mail, code généré localement et affiché dans l'UI
-    console.log(`[GRATUIT] Code ${purpose}: ${code} -> ${email} (affiché localement, 0€)`);
-    // On simule un petit délai réseau pour le réalisme
-    await new Promise(r=>setTimeout(r, 350));
-    return true;
-  }
-
-
-  
-  // UI Elements
-  const authOverlay = document.getElementById('authOverlay');
-  const tabLogin = document.getElementById('tabLogin');
-  const tabRegister = document.getElementById('tabRegister');
-  const authTitle = document.getElementById('authTitle');
-  const authSubtitle = document.getElementById('authSubtitle');
-  const authEmail = document.getElementById('authEmail');
-  const authPassword = document.getElementById('authPassword');
-  const authConfirm = document.getElementById('authConfirm');
-  const confirmField = document.getElementById('confirmPasswordField');
-  const authSubmitBtn = document.getElementById('authSubmitBtn');
-  const authError = document.getElementById('authError');
-  const authSuccess = document.getElementById('authSuccess');
-  const verifyOverlay = document.getElementById('verifyOverlay');
-  const verifyTitle = document.getElementById('verifyTitle');
-  const verifyDesc = document.getElementById('verifyDesc');
-  const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
-  const demoCodeDisplay = document.getElementById('demoCodeDisplay');
-  const demoCodeBox = document.getElementById('demoCodeBox');
-  const codeInputs = document.querySelectorAll('.code-input');
-  const verifySubmitBtn = document.getElementById('verifySubmitBtn');
-  const verifyResendBtn = document.getElementById('verifyResendBtn');
-  const verifyCancelBtn = document.getElementById('verifyCancelBtn');
-  const verifyError = document.getElementById('verifyError');
-  const verifySuccess = document.getElementById('verifySuccess');
-  const verifyPurposeLabel = document.getElementById('verifyPurposeLabel');
-  const codeExpireTimer = document.getElementById('codeExpireTimer');
-  
-  const userAccountBtn = document.getElementById('userAccountBtn');
-  const userMenu = document.getElementById('userMenu');
-  const userMenuEmail = document.getElementById('userMenuEmail');
-  const userMenuStatus = document.getElementById('userMenuStatus');
-  const userMenuAvatar = document.getElementById('userMenuAvatar');
-  const userMenuLoggedSection = document.getElementById('userMenuLoggedSection');
-  const userMenuGuestSection = document.getElementById('userMenuGuestSection');
-  
-  let currentAuthMode = 'login'; // login | register
-  let verifyPurpose = 'register'; // register | api_access
-  let expireInterval = null;
-  
-  function showError(el, msg){
-    el.textContent = msg;
-    el.classList.add('show');
-  }
-  function hideError(el){ el.classList.remove('show'); el.textContent=''; }
-  function showSuccess(el, msg){ el.textContent=msg; el.classList.add('show'); }
-  
-  function setAuthMode(mode){
-    currentAuthMode = mode;
-    if(mode==='login'){
-      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
-      authTitle.textContent='Connexion'; authSubtitle.textContent='Connecte-toi pour sécuriser ta clé API';
-      confirmField.style.display='none'; authSubmitBtn.textContent='Se connecter';
-    }else{
-      tabLogin.classList.remove('active'); tabRegister.classList.add('active');
-      authTitle.textContent='Inscription'; authSubtitle.textContent='Crée ton compte - vérification par e-mail requise';
-      confirmField.style.display='flex'; authSubmitBtn.textContent='Créer mon compte';
-    }
-    hideError(authError); hideError(authSuccess);
-  }
-  tabLogin?.addEventListener('click',()=>setAuthMode('login'));
-  tabRegister?.addEventListener('click',()=>setAuthMode('register'));
-  
-  function openAuthOverlay(){
-    authOverlay.hidden=false;
-    setAuthMode(currentAuthMode);
-    setTimeout(()=>authEmail.focus(),100);
-    // close other overlays
-    if(typeof closeBurgerMenu==='function') closeBurgerMenu();
-    if(typeof closeKeyPanel==='function'){ try{const k=document.getElementById('keyOverlay'); if(k&&!k.hidden) k.hidden=true;}catch{} }
-    updateUserMenuUI();
-  }
-  function closeAuthOverlay(){ authOverlay.hidden=true; }
-  
-  // Auth submit
-  async function handleAuthSubmit(){
-    const email = authEmail.value.trim().toLowerCase();
-    const pwd = authPassword.value;
-    const confirm = authConfirm.value;
-    hideError(authError); hideError(authSuccess);
-    
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      authEmail.classList.add('error'); showError(authError, 'E-mail invalide'); return;
-    }else authEmail.classList.remove('error');
-    if(!pwd || pwd.length<6){
-      authPassword.classList.add('error'); showError(authError, 'Mot de passe minimum 6 caractères'); return;
-    }else authPassword.classList.remove('error');
-    
-    if(currentAuthMode==='register'){
-      if(pwd!==confirm){ showError(authError,'Les mots de passe ne correspondent pas'); return; }
-      const users = getUsers();
-      if(users.find(u=>u.email.toLowerCase()===email)){
-        showError(authError,'Un compte existe déjà avec cet e-mail. Connecte-toi.'); return;
-      }
-      authSubmitBtn.disabled=true; authSubmitBtn.textContent='⏳ Création...';
-      const hash = await hashPassword(pwd);
-      const newUser = {email, passwordHash: hash, verified:false, createdAt: Date.now()};
-      users.push(newUser); saveUsers(users);
-      // create verification code
-      const code = generateCode();
-      const pending = {email, code, expires: Date.now()+CODE_EXPIRY_MS, purpose:'register', attempts:0};
-      setPending(pending);
-      await sendEmailCode(email, code, 'register');
-      authSubmitBtn.disabled=false; setAuthMode('login');
-      showSuccess(authSuccess, 'Compte créé ! Vérifie ton e-mail pour le code.');
-      openVerifyOverlay(email, code, 'register');
-    }else{
-      // login
-      const users = getUsers();
-      const user = users.find(u=>u.email.toLowerCase()===email);
-      if(!user){ showError(authError,'Compte introuvable. Inscris-toi.'); return; }
-      const hash = await hashPassword(pwd);
-      if(user.passwordHash!==hash){ showError(authError,'Mot de passe incorrect'); return; }
-      if(!user.verified){
-        // need verification
-        const code = generateCode();
-        const pending = {email, code, expires: Date.now()+CODE_EXPIRY_MS, purpose:'register', attempts:0};
-        setPending(pending); await sendEmailCode(email, code, 'register');
-        openVerifyOverlay(email, code, 'register');
-        showError(authError,'E-mail non vérifié. Code renvoyé.');
-        return;
-      }
-      // success
-      localStorage.setItem(AUTH_CURRENT_KEY, email);
-      closeAuthOverlay();
-      updateUserAccountButton();
-      updateUserMenuUI();
-      showToast(`Connecté: ${email}`);
-      // if api key missing, trigger its flow? keep original behavior
-    }
-  }
-  authSubmitBtn?.addEventListener('click', handleAuthSubmit);
-  authEmail?.addEventListener('keydown', e=>{ if(e.key==='Enter') handleAuthSubmit(); });
-  authPassword?.addEventListener('keydown', e=>{ if(e.key==='Enter') handleAuthSubmit(); });
-  
-  // Verify overlay logic
-  function openVerifyOverlay(email, code, purpose){
-    verifyPurpose = purpose;
-    verifyOverlay.hidden=false;
-    verifyEmailDisplay.textContent=email;
-    demoCodeDisplay.textContent=code;
-    verifyPurposeLabel.textContent = purpose==='api_access' ? 'pour accès clé API' : 'pour création de compte';
-    if(purpose==='api_access'){
-      verifyTitle.textContent='Code d\'accès clé API';
-      verifyDesc.innerHTML=`Code envoyé à <span class="email-highlight">${email}</span> pour accéder à ta clé API`;
-    }else{
-      verifyTitle.textContent='Vérifie ton e-mail';
-      verifyDesc.innerHTML=`Nous avons envoyé un code à <span class="email-highlight">${email}</span>`;
-    }
-    codeInputs.forEach(inp=>{ inp.value=''; inp.classList.remove('filled'); });
-    hideError(verifyError); hideError(verifySuccess);
-    setTimeout(()=>codeInputs[0]?.focus(),150);
-    startExpireTimer();
-  }
-  function closeVerifyOverlay(){ verifyOverlay.hidden=true; if(expireInterval) clearInterval(expireInterval); }
-  
-  function getCodeFromInputs(){ return Array.from(codeInputs).map(i=>i.value).join(''); }
-  
-  codeInputs.forEach((input, idx)=>{
-    input.addEventListener('input', e=>{
-      const val = e.target.value;
-      if(val.length===1){
-        e.target.classList.add('filled');
-        if(idx<5) codeInputs[idx+1].focus();
-      }else e.target.classList.remove('filled');
-      if(getCodeFromInputs().length===6){
-        // auto verify?
-        setTimeout(()=>handleVerifySubmit(), 300);
-      }
-    });
-    input.addEventListener('keydown', e=>{
-      if(e.key==='Backspace' && !e.target.value && idx>0){
-        codeInputs[idx-1].focus();
-      }
-      if(e.key==='Enter') handleVerifySubmit();
-    });
-    input.addEventListener('paste', e=>{
-      e.preventDefault();
-      const pasted = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
-      pasted.split('').forEach((char,i)=>{
-        if(codeInputs[i]){ codeInputs[i].value=char; codeInputs[i].classList.add('filled'); }
-      });
-      if(pasted.length===6) handleVerifySubmit();
-    });
-  });
-  
-  function startExpireTimer(){
-    if(expireInterval) clearInterval(expireInterval);
-    const pending = getPending();
-    if(!pending) return;
-    function update(){
-      const left = Math.max(0, pending.expires - Date.now());
-      const m = Math.floor(left/60000);
-      const s = Math.floor((left%60000)/1000);
-      codeExpireTimer.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-      if(left<=0){
-        clearInterval(expireInterval);
-        showError(verifyError,'Code expiré. Renvoie un nouveau code.');
-        demoCodeDisplay.textContent='EXPIRÉ';
-      }
-    }
-    update();
-    expireInterval = setInterval(update, 1000);
-  }
-  
-  async function handleVerifySubmit(){
-    const entered = getCodeFromInputs();
-    const pending = getPending();
-    hideError(verifyError); hideError(verifySuccess);
-    if(!pending){ showError(verifyError,'Aucun code en attente. Redemande.'); return; }
-    if(Date.now()>pending.expires){ showError(verifyError,'Code expiré'); return; }
-    if(entered.length!==6){ showError(verifyError,'Entre les 6 chiffres'); return; }
-    verifySubmitBtn.disabled=true; verifySubmitBtn.textContent='⏳ Vérification...';
-    
-    await new Promise(r=>setTimeout(r, 400)); // small delay for UX
-    
-    if(entered!==pending.code){
-      pending.attempts=(pending.attempts||0)+1;
-      setPending(pending);
-      showError(verifyError,`Code incorrect (${pending.attempts}/3). Réessaie.`);
-      verifySubmitBtn.disabled=false; verifySubmitBtn.textContent='Vérifier le code';
-      if(pending.attempts>=3){
-        showError(verifyError,'Trop de tentatives. Nouveau code envoyé.');
-        const newCode = generateCode();
-        pending.code=newCode; pending.expires=Date.now()+CODE_EXPIRY_MS; pending.attempts=0;
-        setPending(pending); await sendEmailCode(pending.email, newCode, pending.purpose);
-        demoCodeDisplay.textContent=newCode; startExpireTimer();
-      }
-      return;
-    }
-    // success
-    if(pending.purpose==='register'){
-      const users = getUsers();
-      const u = users.find(x=>x.email.toLowerCase()===pending.email.toLowerCase());
-      if(u){ u.verified=true; saveUsers(users); }
-      localStorage.setItem(AUTH_CURRENT_KEY, pending.email);
-      clearPending();
-      closeVerifyOverlay(); closeAuthOverlay();
-      updateUserAccountButton(); updateUserMenuUI();
-      showToast('E-mail vérifié ✅ Compte activé');
-      // after register, maybe open key panel if no key
-      setTimeout(()=>{
-        const k = localStorage.getItem('mistral_api_key');
-        if(!k && typeof openKeyPanelSecure==='function') openKeyPanelSecure();
-      }, 600);
-    }else if(pending.purpose==='api_access'){
-      setApiVerified(pending.email, Date.now()+API_ACCESS_VALID_MS);
-      clearPending();
-      closeVerifyOverlay();
-      showToast('Accès API autorisé pour 30 min 🔑');
-      updateUserMenuUI();
-      // now open real key panel
-      if(window._origOpenKeyPanel) window._origOpenKeyPanel();
-      else if(typeof openKeyPanel==='function') openKeyPanel();
-    }
-    verifySubmitBtn.disabled=false; verifySubmitBtn.textContent='Vérifier le code';
-  }
-  verifySubmitBtn?.addEventListener('click', handleVerifySubmit);
-  
-  async function handleResend(){
-    const pending = getPending();
-    if(!pending) return;
-    verifyResendBtn.disabled=true; verifyResendBtn.textContent='Envoi...';
-    const newCode = generateCode();
-    pending.code=newCode; pending.expires=Date.now()+CODE_EXPIRY_MS; pending.attempts=0;
-    setPending(pending); await sendEmailCode(pending.email, newCode, pending.purpose);
-    demoCodeDisplay.textContent=newCode;
-    startExpireTimer();
-    showSuccess(verifySuccess,'Nouveau code envoyé !');
-    verifyResendBtn.disabled=false; verifyResendBtn.textContent='Renvoyer le code';
-    setTimeout(()=>hideError(verifySuccess), 2500);
-  }
-  verifyResendBtn?.addEventListener('click', handleResend);
-  verifyCancelBtn?.addEventListener('click', ()=>{ closeVerifyOverlay(); if(verifyPurpose==='register') openAuthOverlay(); });
-  verifyOverlay?.addEventListener('click', e=>{ if(e.target===verifyOverlay) { closeVerifyOverlay(); } });
-  
-  // Toast helper
-  function showToast(msg){
-    let sh = document.getElementById('statusHint');
-    if(!sh){
-      sh = document.createElement('div');
-      sh.id='statusHint'; sh.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-solid);border:1px solid var(--border);padding:10px 16px;border-radius:10px;z-index:110;box-shadow:var(--shadow);font-size:0.85rem';
-      document.body.appendChild(sh);
-    }
-    sh.textContent=msg; sh.style.display='block';
-    setTimeout(()=>sh.style.display='none', 3000);
-  }
-  
-  // User Account Button & Menu
-  function updateUserAccountButton(){
-    const btn = document.getElementById('userAccountBtn');
-    if(!btn) return;
-    const user = getCurrentUser();
-    const avatarSpan = document.getElementById('userAvatar');
-    if(user){
-      btn.classList.add('logged-in');
-      const initial = user.email[0].toUpperCase();
-      if(avatarSpan){
-        avatarSpan.textContent=initial;
-        avatarSpan.className='avatar-letter';
-      }
-      btn.title=user.email;
-    }else{
-      btn.classList.remove('logged-in');
-      if(avatarSpan){ avatarSpan.textContent='👤'; avatarSpan.className=''; }
-      btn.title='Compte';
-    }
-  }
-  
-  function updateUserMenuUI(){
-    const user = getCurrentUser();
-    if(user){
-      userMenuEmail.textContent=user.email;
-      userMenuAvatar.textContent=user.email[0].toUpperCase();
-      userMenuStatus.innerHTML=user.verified ? '<span style="color:#10b981">●</span> Vérifié' : '<span style="color:#f59e0b">●</span> Non vérifié';
-      userMenuStatus.className=user.verified ? 'user-menu-status status-verified' : 'user-menu-status status-unverified';
-      userMenuLoggedSection.style.display='flex';
-      userMenuGuestSection.style.display='none';
-      // api access status
-      const valid = isApiAccessValid(user.email);
-      const expiry = getApiAccessExpiry(user.email);
-      const label = document.getElementById('apiAccessStatusLabel');
-      if(label){
-        if(valid){
-          const left = Math.max(0, expiry-Date.now());
-          const mins = Math.floor(left/60000);
-          label.textContent=`Accès valide ${mins} min`;
-          label.style.color='#10b981';
-        }else{
-          label.textContent='Code requis pour clé API';
-          label.style.color='var(--text-muted)';
-        }
-      }
-      document.getElementById('userMenuApiLabel').textContent = valid ? 'Clé API (accès autorisé)' : 'Gérer ma clé API';
-    }else{
-      userMenuEmail.textContent='Non connecté';
-      userMenuAvatar.textContent='?';
-      userMenuStatus.textContent='● Non connecté';
-      userMenuLoggedSection.style.display='none';
-      userMenuGuestSection.style.display='flex';
-    }
-  }
-  
-  // Replace futureLogoSlot with user button
-  function injectUserButton(){
-    const slot = document.getElementById('futureLogoSlot');
-    const headerTop = document.querySelector('.header-top');
-    let btn = document.getElementById('userAccountBtn');
-    if(!btn){
-      btn = document.createElement('button');
-      btn.id='userAccountBtn';
-      btn.className='user-account-btn';
-      btn.title='Compte utilisateur';
-      btn.innerHTML='<span id="userAvatar">👤</span>';
-      // insert before or replace slot
-      if(slot) slot.replaceWith(btn);
-      else if(headerTop) headerTop.appendChild(btn);
-    }
-    btn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      userMenu.hidden = !userMenu.hidden;
-      if(!userMenu.hidden) updateUserMenuUI();
-    });
-  }
-  
-  // Close menu when clicking outside
-  document.addEventListener('click', (e)=>{
-    if(userMenu && !userMenu.hidden){
-      if(!userMenu.contains(e.target) && e.target.id!=='userAccountBtn' && !e.target.closest('#userAccountBtn')){
-        userMenu.hidden=true;
-      }
-    }
-  });
-  
-  // User menu actions
-  document.getElementById('userMenuLoginBtn')?.addEventListener('click', ()=>{ userMenu.hidden=true; openAuthOverlay(); });
-  document.getElementById('userMenuLogoutBtn')?.addEventListener('click', ()=>{
-    localStorage.removeItem(AUTH_CURRENT_KEY);
-    // optionally clear api verified? keep
-    userMenu.hidden=true;
-    updateUserAccountButton(); updateUserMenuUI();
-    showToast('Déconnecté');
-    openAuthOverlay();
-  });
-  document.getElementById('userMenuApiBtn')?.addEventListener('click', ()=>{
-    userMenu.hidden=true;
-    openKeyPanelSecure();
-  });
-  document.getElementById('userMenuProfileBtn')?.addEventListener('click', ()=>{
-    userMenu.hidden=true;
-    openAuthOverlay();
-    showToast('Profil: ' + (getCurrentEmail()||'non connecté'));
-  });
-  document.getElementById('userMenuChangePwdBtn')?.addEventListener('click', ()=>{
-    const newPwd = prompt('Nouveau mot de passe (min 6 caractères):');
-    if(!newPwd || newPwd.length<6){ alert('Trop court'); return; }
-    (async()=>{
-      const user = getCurrentUser();
-      if(!user) return;
-      const users = getUsers();
-      const u = users.find(x=>x.email.toLowerCase()===user.email.toLowerCase());
-      if(u){ u.passwordHash=await hashPassword(newPwd); saveUsers(users); alert('Mot de passe changé ✅'); }
-    })();
-  });
-  document.getElementById('userMenuSecurityBtn')?.addEventListener('click', ()=>{
-    userMenu.hidden=true;
-    openKeyPanelSecure();
-  });
-  
-  // Secure wrapper for openKeyPanel
-  function openKeyPanelSecure(){
-    const user = getCurrentUser();
-    if(!user){
-      openAuthOverlay();
-      showToast('Connecte-toi d\'abord 🔐');
-      return;
-    }
-    if(!user.verified){
-      const code = generateCode();
-      const pending = {email:user.email, code, expires: Date.now()+CODE_EXPIRY_MS, purpose:'register', attempts:0};
-      setPending(pending); sendEmailCode(user.email, code, 'register');
-      openVerifyOverlay(user.email, code, 'register');
-      return;
-    }
-    // check api access code
-    if(!isApiAccessValid(user.email)){
-      const code = generateCode();
-      const pending = {email:user.email, code, expires: Date.now()+CODE_EXPIRY_MS, purpose:'api_access', attempts:0};
-      setPending(pending); sendEmailCode(user.email, code, 'api_access');
-      openVerifyOverlay(user.email, code, 'api_access');
-      return;
-    }
-    // all good, open real panel
-    if(window._origOpenKeyPanel) window._origOpenKeyPanel();
-  }
-  
-  // Hook into original openKeyPanel after page load
-  window.addEventListener('load', ()=>{
-    // inject button
-    injectUserButton();
-    updateUserAccountButton();
-    updateUserMenuUI();
-    
-    // save original
-    if(typeof openKeyPanel==='function' && !window._origOpenKeyPanel){
-      window._origOpenKeyPanel = openKeyPanel;
-      window.openKeyPanel = openKeyPanelSecure;
-    }
-    // also intercept burgerKeyBtn
-    const burgerKeyBtn = document.getElementById('burgerKeyBtn');
-    if(burgerKeyBtn){
-      // remove old listeners by cloning
-      const newBtn = burgerKeyBtn.cloneNode(true);
-      burgerKeyBtn.parentNode.replaceChild(newBtn, burgerKeyBtn);
-      newBtn.addEventListener('click', ()=>{ if(typeof closeBurgerMenu==='function') closeBurgerMenu(); openKeyPanelSecure(); });
-    }
-    
-    // On first load, if not logged, show auth after a delay
-    const current = getCurrentUser();
-    if(!current){
-      setTimeout(()=>openAuthOverlay(), 600);
-    }else{
-      // if logged but api key missing and not verified api access, original behavior would auto-open key panel
-      // we let secure wrapper handle
-      if(!localStorage.getItem('mistral_api_key')){
-        // don't auto-open immediately, wait for user action, but we can hint
-        console.log('Utilisateur connecté, clé manquante');
-      }
-    }
-  });
-  
-  // Expose for debugging
-  window.__auth = {getUsers, getCurrentUser, isApiAccessValid, openAuthOverlay, openKeyPanelSecure};
-})();
-</script>
-
-
-<script>
-// === GESTION GRATUITE BONUS ===
-(function(){
-  // Ajoute export/import dans le menu utilisateur
-  window.addEventListener('load', ()=>{
-    setTimeout(()=>{
-      const menuBody = document.querySelector('.user-menu-body');
-      if(!menuBody) return;
-      // Ajoute section gestion gratuite si pas déjà là
-      if(document.getElementById('freeManageSection')) return;
-      const section = document.createElement('div');
-      section.id='freeManageSection';
-      section.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:6px';
-      section.innerHTML=`
-        <div class="user-menu-divider"></div>
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">Gestion gratuite</div>
-        <button class="user-menu-item" id="freeExportBtn"><span>💾</span><span>Exporter mes comptes (JSON)</span></button>
-        <button class="user-menu-item" id="freeImportBtn"><span>📥</span><span>Importer comptes</span></button>
-        <button class="user-menu-item" id="freeClearBtn" style="background:rgba(239,68,68,0.06)"><span>🗑️</span><span>Tout effacer (local)</span></button>
-        <div style="font-size:0.68rem;color:var(--text-muted);padding:4px 2px;line-height:1.3">✅ 0€ • Offline • Chiffré SHA-256 • Stockage local uniquement</div>
-      `;
-      const loggedSection = document.getElementById('userMenuLoggedSection');
-      if(loggedSection) loggedSection.appendChild(section);
-      
-      document.getElementById('freeExportBtn')?.addEventListener('click', ()=>{
-        const users = JSON.parse(localStorage.getItem('app_auth_users_v2')||'[]');
-        const data = {users, exportDate: new Date().toISOString(), version:'free-v1'};
-        const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download=`comptes-gratuits-${new Date().toISOString().slice(0,10)}.json`; a.click();
-        URL.revokeObjectURL(url);
-      });
-      document.getElementById('freeImportBtn')?.addEventListener('click', ()=>{
-        const input = document.createElement('input'); input.type='file'; input.accept='.json';
-        input.onchange = (e)=>{
-          const file = e.target.files[0]; if(!file) return;
-          const reader = new FileReader();
-          reader.onload = (ev)=>{
-            try{
-              const data = JSON.parse(ev.target.result);
-              if(data.users && Array.isArray(data.users)){
-                if(confirm(`Importer ${data.users.length} comptes ? (écrase existants)`)){
-                  localStorage.setItem('app_auth_users_v2', JSON.stringify(data.users));
-                  alert('Importé ✅ Recharge la page');
-                  location.reload();
-                }
-              }else alert('Fichier invalide');
-            }catch(err){ alert('Erreur: '+err.message); }
-          };
-          reader.readAsText(file);
-        };
-        input.click();
-      });
-      document.getElementById('freeClearBtn')?.addEventListener('click', ()=>{
-        if(confirm('Tout effacer ? Comptes + clé API + sessions. Irréversible en local.')){
-          localStorage.removeItem('app_auth_users_v2');
-          localStorage.removeItem('app_auth_current_v2');
-          localStorage.removeItem('app_auth_pending_v2');
-          localStorage.removeItem('app_auth_api_verified_v2');
-          localStorage.removeItem('mistral_api_key');
-          alert('Effacé ✅');
-          location.reload();
-        }
-      });
-    }, 800);
-  });
-})();
-</script>
-
-
-<script>
-// ===== PASSKEYS GRATUITS - Face ID / Touch ID / Windows Hello - 100% gratuit, 0€, WebAuthn =====
-(function(){
-  const PASSKEYS_KEY = 'app_passkeys_free_v1';
-  const isWebAuthnSupported = () => {
-    return window.PublicKeyCredential && 
-           typeof window.PublicKeyCredential === 'function' &&
-           typeof navigator.credentials !== 'undefined';
-  };
-
-  function getPasskeys(){ try{return JSON.parse(localStorage.getItem(PASSKEYS_KEY)||'[]')}catch{return []} }
-  function savePasskeys(list){ localStorage.setItem(PASSKEYS_KEY, JSON.stringify(list)); }
-  
-  function base64urlToBuffer(base64url){
-    const padding = '='.repeat((4 - base64url.length % 4) % 4);
-    const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const raw = atob(base64);
-    const buffer = new Uint8Array(raw.length);
-    for(let i=0;i<raw.length;i++) buffer[i]=raw.charCodeAt(i);
-    return buffer;
-  }
-  function bufferToBase64url(buffer){
-    const bytes = new Uint8Array(buffer);
-    let str = '';
-    for(const b of bytes) str += String.fromCharCode(b);
-    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-  }
-
-  async function registerPasskey(email){
-    if(!isWebAuthnSupported()){
-      alert('Passkey non supporté sur ce navigateur/appareil. Utilise Chrome, Safari, Edge récent avec Face ID / Touch ID.');
-      return null;
-    }
-    const displayName = email.split('@')[0];
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const userId = new TextEncoder().encode(email);
-    
-    const options = {
-      publicKey: {
-        challenge: challenge,
-        rp: { name: "Mistral Chat Gratuit", id: window.location.hostname },
-        user: { id: userId, name: email, displayName: displayName },
-        pubKeyCredParams: [
-          {type: "public-key", alg: -7}, // ES256
-          {type: "public-key", alg: -257} // RS256
-        ],
-        authenticatorSelection: {
-          authenticatorAttachment: "platform", // privilégie Face ID / Touch ID intégré
-          userVerification: "required",
-          requireResidentKey: false
-        },
-        timeout: 60000,
-        attestation: "none"
-      }
-    };
-
-    try{
-      const cred = await navigator.credentials.create(options);
-      if(!cred) throw new Error('Création annulée');
-      
-      const credentialId = bufferToBase64url(cred.rawId);
-      const list = getPasskeys();
-      // évite doublon
-      if(!list.find(p=>p.credentialId===credentialId && p.email===email)){
-        list.push({
-          email: email.toLowerCase(),
-          credentialId: credentialId,
-          name: `${displayName} - ${/iPhone|iPad|Mac/.test(navigator.userAgent) ? 'Face ID/Touch ID' : /Windows/.test(navigator.userAgent) ? 'Windows Hello' : 'Passkey'}`,
-          createdAt: Date.now(),
-          lastUsed: Date.now()
-        });
-        savePasskeys(list);
-      }
-      console.log('[PASSKEY] Créé', credentialId, 'pour', email);
-      return credentialId;
-    }catch(e){
-      console.error('[PASSKEY] Erreur création', e);
-      if(e.name==='NotAllowedError') alert('Création annulée ou Face ID refusé.');
-      else if(e.name==='InvalidStateError') alert('Ce passkey existe déjà pour ce compte.');
-      else alert('Erreur Passkey: '+(e.message||e.name));
-      return null;
-    }
-  }
-
-  async function authenticateWithPasskey(emailOrNull){
-    if(!isWebAuthnSupported()){
-      alert('Passkey non supporté');
-      return null;
-    }
-    const allPasskeys = getPasskeys();
-    let relevant = allPasskeys;
-    if(emailOrNull){
-      relevant = allPasskeys.filter(p=>p.email===emailOrNull.toLowerCase());
-    }
-    if(relevant.length===0){
-      if(emailOrNull) alert('Aucun Passkey pour cet e-mail. Crée-en un d\'abord.');
-      else alert('Aucun Passkey enregistré. Connecte-toi avec e-mail/mdp puis ajoute un Passkey dans le menu.');
-      return null;
-    }
-
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const allowCredentials = relevant.map(p=>({
-      id: base64urlToBuffer(p.credentialId),
-      type: 'public-key'
-    }));
-
-    const options = {
-      publicKey: {
-        challenge: challenge,
-        allowCredentials: allowCredentials,
-        userVerification: 'required',
-        timeout: 60000
-      }
-    };
-
-    try{
-      const assertion = await navigator.credentials.get(options);
-      if(!assertion) throw new Error('Auth annulée');
-      
-      // En mode gratuit local, on fait confiance à l'authenticator
-      // Le fait que get() réussisse prouve la possession de la clé privée (Face ID ok)
-      const usedId = bufferToBase64url(assertion.rawId);
-      const matched = relevant.find(p=>p.credentialId===usedId) || relevant[0];
-      
-      // met à jour lastUsed
-      const list = getPasskeys();
-      const idx = list.findIndex(p=>p.credentialId===matched.credentialId);
-      if(idx>=0){ list[idx].lastUsed=Date.now(); savePasskeys(list); }
-      
-      console.log('[PASSKEY] Auth OK', matched.email);
-      return matched.email;
-    }catch(e){
-      console.error('[PASSKEY] Erreur auth', e);
-      if(e.name!=='NotAllowedError') alert('Erreur Passkey: '+(e.message||e.name));
-      return null;
-    }
-  }
-
-  // UI Integration
-  function injectPasskeyUI(){
-    // Ajoute bouton Passkey dans overlay auth
-    const authBody = document.querySelector('.auth-body');
-    if(!authBody || document.getElementById('passkeyLoginBtn')) return;
-    
-    const passkeySection = document.createElement('div');
-    passkeySection.style.cssText='display:flex;flex-direction:column;gap:8px;margin-top:4px';
-    passkeySection.innerHTML=`
-      <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-        <span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">ou gratuit sans mot de passe</span>
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-      </div>
-      <button class="auth-btn secondary" id="passkeyLoginBtn" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;border:none;font-weight:700">
-        <span style="font-size:1.1rem">🔐</span> Se connecter avec Face ID / Passkey
-      </button>
-      <button class="auth-btn secondary" id="passkeyRegisterBtn" style="font-size:0.85rem">
-        <span>✨</span> Créer un Passkey gratuit pour ce compte
-      </button>
-      <div id="passkeySupportInfo" style="font-size:0.7rem;color:var(--text-muted);text-align:center;line-height:1.3"></div>
-    `;
-    authBody.appendChild(passkeySection);
-
-    const supportInfo = document.getElementById('passkeySupportInfo');
-    if(supportInfo){
-      if(isWebAuthnSupported()){
-        const isApple = /iPhone|iPad|Mac/.test(navigator.userAgent);
-        const isWin = /Windows/.test(navigator.userAgent);
-        supportInfo.innerHTML = `✅ Supporté sur cet appareil — ${isApple ? 'Face ID / Touch ID disponible' : isWin ? 'Windows Hello disponible' : 'Biométrie disponible'} • 100% gratuit • Stocké localement`;
-        supportInfo.style.color='#10b981';
-      }else{
-        supportInfo.textContent='⚠️ Passkey non supporté sur ce navigateur. Utilise Safari, Chrome ou Edge récent.';
-        supportInfo.style.color='#f59e0b';
-      }
-    }
-
-    document.getElementById('passkeyLoginBtn')?.addEventListener('click', async ()=>{
-      const emailInput = document.getElementById('authEmail');
-      const email = emailInput?.value?.trim()?.toLowerCase() || null;
-      const btn = document.getElementById('passkeyLoginBtn');
-      btn.disabled=true; btn.textContent='⏳ Face ID...';
-      const resultEmail = await authenticateWithPasskey(email);
-      btn.disabled=false; btn.innerHTML='<span style="font-size:1.1rem">🔐</span> Se connecter avec Face ID / Passkey';
-      if(resultEmail){
-        // Connecte directement
-        localStorage.setItem('app_auth_current_v2', resultEmail);
-        document.getElementById('authOverlay').hidden=true;
-        if(typeof updateUserAccountButton==='function') updateUserAccountButton();
-        // update via global
-        if(window.__auth && window.__auth.getCurrentUser){
-          // force refresh UI via event
-          window.dispatchEvent(new Event('authChanged'));
-        }
-        const sh = document.getElementById('statusHint');
-        if(sh){ sh.textContent=`Connecté avec Passkey: ${resultEmail} 🔐`; sh.style.display='block'; setTimeout(()=>sh.style.display='none',3000); }
-        location.reload(); // simple reload pour rafraîchir l'état
-      }
-    });
-
-    document.getElementById('passkeyRegisterBtn')?.addEventListener('click', async ()=>{
-      const emailInput = document.getElementById('authEmail');
-      const email = emailInput?.value?.trim()?.toLowerCase();
-      if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-        alert('Entre d\'abord ton e-mail valide ci-dessus pour lier le Passkey');
-        emailInput?.focus();
-        return;
-      }
-      const btn = document.getElementById('passkeyRegisterBtn');
-      btn.disabled=true; btn.textContent='⏳ Création Face ID...';
-      const credId = await registerPasskey(email);
-      btn.disabled=false; btn.innerHTML='<span>✨</span> Créer un Passkey gratuit pour ce compte';
-      if(credId){
-        alert(`Passkey créé ✅\n\nTu pourras maintenant te connecter avec Face ID / Touch ID sans mot de passe.\n\nID: ${credId.slice(0,20)}...`);
-        // Si pas encore de compte, crée compte auto vérifié pour ce passkey
-        const users = JSON.parse(localStorage.getItem('app_auth_users_v2')||'[]');
-        let u = users.find(x=>x.email.toLowerCase()===email);
-        if(!u){
-          // crée compte sans mdp mais vérifié (passkey = preuve)
-          users.push({email: email, passwordHash: 'PASSKEY_ONLY', verified: true, createdAt: Date.now(), hasPasskey: true});
-          localStorage.setItem('app_auth_users_v2', JSON.stringify(users));
-        }else{
-          u.hasPasskey=true; u.verified=true;
-          localStorage.setItem('app_auth_users_v2', JSON.stringify(users));
-        }
-        // connecte
-        localStorage.setItem('app_auth_current_v2', email);
-        document.getElementById('authOverlay').hidden=true;
-        location.reload();
-      }
-    });
-  }
-
-  // Injecte dans menu utilisateur la gestion passkeys
-  function injectPasskeyInUserMenu(){
-    const check = setInterval(()=>{
-      const loggedSection = document.getElementById('userMenuLoggedSection');
-      if(!loggedSection) return;
-      if(document.getElementById('passkeyMenuSection')){ clearInterval(check); return; }
-      const section = document.createElement('div');
-      section.id='passkeyMenuSection';
-      section.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:2px';
-      const passkeys = getPasskeys();
-      const currentEmail = localStorage.getItem('app_auth_current_v2');
-      const myPasskeys = passkeys.filter(p=>!currentEmail || p.email===currentEmail.toLowerCase());
-      section.innerHTML=`
-        <div class="user-menu-divider"></div>
-        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">🔐 Passkeys gratuits</div>
-        <button class="user-menu-item" id="addPasskeyMenuBtn" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,214,0.15));border-color:rgba(16,185,129,0.25)"><span>➕</span><span>Ajouter Face ID / Touch ID</span></button>
-        <div id="passkeyList" style="display:flex;flex-direction:column;gap:4px">
-          ${myPasskeys.length===0 ? '<div style="font-size:0.75rem;color:var(--text-muted);padding:6px">Aucun Passkey. Ajoute-en un !</div>' : myPasskeys.map(p=>`
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:0.8rem">
-              <span>🔐</span>
-              <span style="flex:1;min-width:0"><span style="font-weight:600">${p.name}</span><br/><span style="font-size:0.7rem;opacity:0.7">${new Date(p.createdAt).toLocaleDateString()} • ${p.email}</span></span>
-              <button data-del="${p.credentialId}" class="passkeyDelBtn" style="background:transparent;border:none;cursor:pointer;font-size:0.9rem" title="Supprimer">🗑️</button>
-            </div>
-          `).join('')}
-        </div>
-        <div style="font-size:0.68rem;color:var(--text-muted);padding:2px;line-height:1.3">✅ Face ID / Touch ID / Windows Hello • Gratuit • Stocké local • Aucun serveur</div>
-      `;
-      loggedSection.appendChild(section);
-      
-      document.getElementById('addPasskeyMenuBtn')?.addEventListener('click', async ()=>{
-        const email = localStorage.getItem('app_auth_current_v2');
-        if(!email){ alert('Connecte-toi d\'abord'); return; }
-        const btn = document.getElementById('addPasskeyMenuBtn');
-        btn.textContent='⏳...'; btn.disabled=true;
-        await registerPasskey(email);
-        btn.disabled=false; btn.innerHTML='<span>➕</span><span>Ajouter Face ID / Touch ID</span>';
-        // refresh
-        setTimeout(()=>location.reload(), 500);
-      });
-      
-      document.querySelectorAll('.passkeyDelBtn').forEach(b=>{
-        b.addEventListener('click', (e)=>{
-          const id = e.currentTarget.getAttribute('data-del');
-          if(confirm('Supprimer ce Passkey ?')){
-            const list = getPasskeys().filter(p=>p.credentialId!==id);
-            savePasskeys(list);
-            location.reload();
-          }
-        });
-      });
-      
-      clearInterval(check);
-    }, 500);
-  }
-
-  // Init
-  window.addEventListener('load', ()=>{
-    setTimeout(()=>{
-      injectPasskeyUI();
-      injectPasskeyInUserMenu();
-    }, 700);
-    
-    // Expose globalement
-    window.__passkey = {registerPasskey, authenticateWithPasskey, isWebAuthnSupported, getPasskeys};
-  });
-
-  // Met à jour aussi quand auth change
-  window.addEventListener('authChanged', ()=>{
-    injectPasskeyInUserMenu();
-  });
-})();
-</script>
-
-
-<!-- PAYMENT OVERLAY - PayPal + Revolut -->
-<div class="payment-overlay" id="paymentOverlay" hidden>
-  <div class="payment-panel">
-    <div class="payment-header">
-      <div style="font-size:2.2rem;margin-bottom:8px">💳</div>
-      <h2>Débloque ta clé API</h2>
-      <p id="paymentDesc">Accès sécurisé à ta clé API Mistral — Paiement unique ou abonnement, au choix PayPal ou Revolut</p>
-    </div>
-    
-    <div class="payment-plans">
-      <div class="plan-card">
-        <h4>🆓 Gratuit</h4>
-        <div class="price">0€<span>/mois</span></div>
-        <ul>
-          <li>Chat de base</li>
-          <li>1 agent IA</li>
-          <li>Clé API bloquée</li>
-        </ul>
-      </div>
-      <div class="plan-card pro">
-        <div class="badge-pro">⭐ PRO</div>
-        <h4 style="margin-top:6px">Pro</h4>
-        <div class="price">4,99€<span>/mois</span></div>
-        <ul>
-          <li>Clé API illimitée</li>
-          <li>Agents illimités</li>
-          <li>Code e-mail + Passkey</li>
-          <li>Support prioritaire</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="payment-body">
-      <div class="payment-success" id="paymentSuccess">
-        <div style="font-size:1.6rem">✅</div>
-        <div style="font-weight:700;margin-top:6px">Paiement confirmé !</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px" id="paymentSuccessDetail">Accès Pro débloqué</div>
-      </div>
-
-      <div id="paymentMethods">
-        <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Payer avec</div>
-        
-        <!-- PayPal Button Container -->
-        <div id="paypal-button-container" class="paypal-container"></div>
-        
-        <div class="payment-divider"><span>ou</span></div>
-        
-        <!-- Revolut Pay -->
-        <button class="revolut-btn" id="revolutPayBtn">
-          <span style="font-size:1.1rem">ℛ</span>
-          <span>Payer avec Revolut</span>
-          <span style="background:#fff;color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:800">Pay</span>
-        </button>
-        <button class="revolut-btn" id="revolutLinkBtn" style="background:var(--surface-2);color:var(--text);border:1px solid var(--border);margin-top:8px">
-          <span>🔗</span><span>Lien Revolut.me (sans frais)</span>
-        </button>
-        
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="auth-btn secondary" id="paymentCancelBtn" style="flex:1">Plus tard</button>
-          <button class="auth-btn secondary" id="paymentRestoreBtn" style="flex:1">Restaurer achat</button>
-        </div>
-      </div>
-    </div>
-    
-    <div class="payment-footer">
-      🔒 Paiement sécurisé par PayPal & Revolut • Aucune carte stockée chez nous<br/>
-      <span style="opacity:0.7">Sandbox actif en démo — remplace Client ID par ton vrai ID prod. Voir backend_payment/README.md</span>
-    </div>
-  </div>
-</div>
-
-
-<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR&intent=capture"></script>
-<script>
-// ===== GESTION PAIEMENT PAYPAL + REVOLUT - 100% fonctionnel =====
-(function(){
-  const PAYMENT_KEY = 'app_payment_pro_v1';
-  const PAYMENT_CONFIG = {
-    paypal: {
-      enabled: true,
-      clientId: 'sb', // Remplace par ton vrai Client ID PayPal Live: 'AaBbCc...'
-      currency: 'EUR',
-      price: '4.99',
-      planName: 'Mistral Chat Pro'
+  const PRODUCTS = {
+    monthly: {
+      id: 'com.mistralchat.pro.monthly',
+      id_ios: 'com.mistralchat.pro.monthly',
+      id_android: 'com.mistralchat.pro.monthly',
+      title: 'Mensuel',
+      price: '4,99€',
+      priceValue: 4.99,
+      period: 'mois',
+      trial: true,
+      trialDays: 3,
+      type: 'subscription'
     },
-    revolut: {
-      enabled: true,
-      // Option A: Revolut Pay Merchant API (pro)
-      publicKey: 'TON_PUBLIC_KEY_REVOLUT', // ex: 'pk_sandbox_...'
-      // Option B: Lien Revolut.me simple (gratuit, sans API)
-      revolutMeLink: 'https://revolut.me/tonpseudo', // ex: https://revolut.me/chris
-      price: 4.99
+    annual: {
+      id: 'com.mistralchat.pro.annual',
+      id_ios: 'com.mistralchat.pro.annual',
+      id_android: 'com.mistralchat.pro.annual',
+      title: 'Annuel',
+      price: '39,99€',
+      priceValue: 39.99,
+      period: 'an',
+      trial: true,
+      trialDays: 3,
+      type: 'subscription',
+      save: '-33%'
     },
-    freeBypassForDev: true // true = permet de débloquer sans payer en local pour tester
+    lifetime: {
+      id: 'com.mistralchat.pro.lifetime',
+      id_ios: 'com.mistralchat.pro.lifetime',
+      id_android: 'com.mistralchat.pro.lifetime',
+      title: 'Achat à vie',
+      price: '79,99€',
+      priceValue: 79.99,
+      period: 'à vie',
+      trial: false,
+      type: 'lifetime'
+    }
   };
 
-  function getPayment(){ try{return JSON.parse(localStorage.getItem(PAYMENT_KEY)||'null')}catch{return null} }
-  function savePayment(p){ localStorage.setItem(PAYMENT_KEY, JSON.stringify(p)); }
-  function clearPayment(){ localStorage.removeItem(PAYMENT_KEY); }
+  function getStoreData(){
+    try{return JSON.parse(localStorage.getItem(STORE_KEY)||'null')}catch{return null}
+  }
+  function saveStoreData(data){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
   
   function isProActive(){
-    const p = getPayment();
-    if(!p) return false;
-    if(p.status!=='active' && p.status!=='completed') return false;
-    if(p.expiry && Date.now() > p.expiry) return false;
-    return true;
+    const data = getStoreData();
+    if(!data) return false;
+    if(data.product === 'lifetime' && data.status === 'active') return true;
+    if(data.expiry && Date.now() < data.expiry) return true;
+    return false;
   }
-  function getPaymentExpiry(){
-    const p = getPayment();
-    return p?.expiry || null;
+  function isInTrial(){
+    const data = getStoreData();
+    if(!data || !data.trialStart) return false;
+    if(data.product === 'lifetime') return false;
+    const trialEnd = data.trialStart + TRIAL_DAYS*24*60*60*1000;
+    return Date.now() < trialEnd && Date.now() >= data.trialStart;
+  }
+  function getTrialDaysLeft(){
+    const data = getStoreData();
+    if(!data?.trialStart) return 0;
+    const trialEnd = data.trialStart + TRIAL_DAYS*24*60*60*1000;
+    const left = trialEnd - Date.now();
+    return Math.max(0, Math.ceil(left/(24*60*60*1000)));
+  }
+  function getExpiryDate(){ const d=getStoreData(); return d?.expiry ? new Date(d.expiry) : null; }
+
+  // Détection plateforme
+  function getPlatform(){
+    const ua = navigator.userAgent;
+    if(/iPhone|iPad|iPod/.test(ua)) return 'ios';
+    if(/Android/.test(ua)) return 'android';
+    if(window.Capacitor){
+      try{
+        const plat = Capacitor.getPlatform();
+        if(plat==='ios') return 'ios';
+        if(plat==='android') return 'android';
+      }catch{}
+    }
+    return 'web';
   }
 
   // UI Elements
-  const paymentOverlay = document.getElementById('paymentOverlay');
-  const paypalContainer = document.getElementById('paypal-button-container');
-  const revolutPayBtn = document.getElementById('revolutPayBtn');
-  const revolutLinkBtn = document.getElementById('revolutLinkBtn');
-  const paymentCancelBtn = document.getElementById('paymentCancelBtn');
-  const paymentRestoreBtn = document.getElementById('paymentRestoreBtn');
-  const paymentSuccess = document.getElementById('paymentSuccess');
-  const paymentSuccessDetail = document.getElementById('paymentSuccessDetail');
-  const paymentMethods = document.getElementById('paymentMethods');
+  const storeOverlay = document.getElementById('storeOverlay');
+  const storePlans = document.querySelectorAll('.store-plan');
+  const subscribeBtn = document.getElementById('storeSubscribeBtn');
+  const subscribeLabel = document.getElementById('storeSubscribeLabel');
+  const appleBtn = document.getElementById('storeAppleBtn');
+  const googleBtn = document.getElementById('storeGoogleBtn');
+  const webBtn = document.getElementById('storeWebBtn');
+  const restoreBtn = document.getElementById('storeRestoreBtn');
+  const userAccountBtn = document.getElementById('userAccountBtn');
+  const userMenu = document.getElementById('userMenu');
 
-  function openPaymentOverlay(reason='api_key'){
-    paymentOverlay.hidden=false;
-    paymentSuccess.classList.remove('show');
-    paymentMethods.style.display='block';
-    document.getElementById('paymentDesc').textContent = 
-      reason==='api_key' ? 'Débloque l\'accès à ta clé API Mistral — Paiement sécurisé PayPal ou Revolut' :
-      'Passe en Pro pour débloquer toutes les fonctionnalités';
-    initPayPalButton();
-    // close others
-    if(typeof closeBurgerMenu==='function') closeBurgerMenu();
-  }
-  function closePaymentOverlay(){ paymentOverlay.hidden=true; }
+  let selectedProduct = 'annual';
 
-  function showPaymentSuccess(provider, orderId){
-    paymentSuccess.classList.add('show');
-    paymentMethods.style.display='none';
-    paymentSuccessDetail.textContent = `Payé avec ${provider} • ${orderId?.slice(0,12) || ''} • Accès Pro 30 jours`;
-    setTimeout(()=>{
-      closePaymentOverlay();
-      location.reload();
-    }, 2500);
-  }
-
-  // PayPal Buttons
-  function initPayPalButton(){
-    if(!PAYMENT_CONFIG.paypal.enabled) return;
-    if(!window.paypal || !paypalContainer) return;
-    paypalContainer.innerHTML=''; // reset
-
-    try{
-      paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'blue',
-          shape: 'rect',
-          label: 'pay',
-          height: 45
-        },
-        createOrder: function(data, actions){
-          return actions.order.create({
-            purchase_units: [{
-              amount: { value: PAYMENT_CONFIG.paypal.price, currency_code: PAYMENT_CONFIG.paypal.currency },
-              description: PAYMENT_CONFIG.paypal.planName
-            }]
-          });
-        },
-        onApprove: function(data, actions){
-          return actions.order.capture().then(function(details){
-            console.log('[PAYPAL] Paiement OK', details);
-            const payment = {
-              email: (localStorage.getItem('app_auth_current_v2') || details.payer?.email_address || 'guest').toLowerCase(),
-              provider: 'paypal',
-              status: 'active',
-              orderId: details.id,
-              payer: details.payer,
-              amount: details.purchase_units?.[0]?.amount?.value || PAYMENT_CONFIG.paypal.price,
-              currency: PAYMENT_CONFIG.paypal.currency,
-              createdAt: Date.now(),
-              expiry: Date.now() + 30*24*60*60*1000, // 30 jours
-              details: details
-            };
-            savePayment(payment);
-            showPaymentSuccess('PayPal', details.id);
-            
-            // Optionnel: vérif côté serveur
-            // fetch('/api/verify-paypal', {method:'POST', body: JSON.stringify({orderId: details.id})})
-          });
-        },
-        onError: function(err){
-          console.error('[PAYPAL] Erreur', err);
-          alert('Erreur PayPal: '+(err.message||'voir console'));
-        },
-        onCancel: function(){
-          console.log('[PAYPAL] Annulé');
-        }
-      }).render('#paypal-button-container');
-    }catch(e){
-      console.error('PayPal render failed', e);
-      paypalContainer.innerHTML='<div style="padding:12px;text-align:center;font-size:0.8rem;color:#ef4444">PayPal SDK non chargé. Vérifie Client ID.</div>';
-    }
-  }
-
-  // Revolut Pay
-  revolutPayBtn?.addEventListener('click', async ()=>{
-    if(!PAYMENT_CONFIG.revolut.enabled){ alert('Revolut désactivé'); return; }
-    
-    // Si public key configurée, utilise Revolut Checkout (pro)
-    if(PAYMENT_CONFIG.revolut.publicKey !== 'TON_PUBLIC_KEY_REVOLUT' && window.RevolutCheckout){
-      try{
-        revolutPayBtn.disabled=true; revolutPayBtn.textContent='⏳ Création commande...';
-        // Crée commande côté backend (doit retourner order token)
-        const res = await fetch('/api/create-revolut-order', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({
-            amount: Math.round(PAYMENT_CONFIG.revolut.price*100),
-            currency: 'EUR',
-            email: localStorage.getItem('app_auth_current_v2')||'guest'
-          })
-        });
-        if(!res.ok) throw new Error('Backend Revolut non configuré');
-        const {orderToken} = await res.json();
-        
-        const RC = await RevolutCheckout(orderToken, 'prod');
-        RC.payWithPopup({
-          onSuccess(){ 
-            const payment = {
-              email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
-              provider: 'revolut',
-              status: 'active',
-              orderId: orderToken,
-              amount: PAYMENT_CONFIG.revolut.price,
-              currency: 'EUR',
-              createdAt: Date.now(),
-              expiry: Date.now()+30*24*60*60*1000
-            };
-            savePayment(payment);
-            showPaymentSuccess('Revolut', orderToken);
-          },
-          onError(err){ alert('Erreur Revolut: '+err); },
-          onCancel(){ console.log('Revolut annulé'); }
-        });
-      }catch(e){
-        console.warn('Revolut Checkout fallback lien', e);
-        // Fallback lien simple
-        window.open(PAYMENT_CONFIG.revolut.revolutMeLink, '_blank');
-        // Pour démo, on débloque après 3 sec si lien cliqué (à remplacer par webhook en prod)
-        if(PAYMENT_CONFIG.freeBypassForDev && confirm('Mode démo: As-tu payé via Revolut.me ? Clique OK pour débloquer Pro (prod: vérif webhook)')){
-          const payment = {
-            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
-            provider: 'revolut_link',
-            status: 'active',
-            orderId: 'revolut.me-'+Date.now(),
-            amount: PAYMENT_CONFIG.revolut.price,
-            createdAt: Date.now(),
-            expiry: Date.now()+30*24*60*60*1000
-          };
-          savePayment(payment);
-          showPaymentSuccess('Revolut.me', payment.orderId);
-        }
-      }finally{
-        revolutPayBtn.disabled=false; revolutPayBtn.innerHTML='<span style="font-size:1.1rem">ℛ</span><span>Payer avec Revolut</span><span style="background:#fff;color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:800">Pay</span>';
-      }
+  function selectPlan(productId){
+    selectedProduct = productId;
+    storePlans.forEach(p=>{
+      p.classList.toggle('selected', p.dataset.product===productId);
+    });
+    const prod = PRODUCTS[productId];
+    if(prod.trial){
+      subscribeLabel.textContent = `Commencer l'essai gratuit ${prod.trialDays} jours`;
+      subscribeBtn.innerHTML = `<span>🎁</span><span>Essai gratuit ${prod.trialDays} jours, puis ${prod.price}/${prod.period}</span>`;
     }else{
-      // Mode simple: lien Revolut.me (gratuit, sans API, 0% frais perso)
-      const link = PAYMENT_CONFIG.revolut.revolutMeLink;
-      if(link.includes('tonpseudo')){
-        alert('Configure ton lien Revolut.me dans PAYMENT_CONFIG.revolut.revolutMeLink\nEx: https://revolut.me/chris\n\nPour démo, je débloque Pro gratuitement.');
-        if(PAYMENT_CONFIG.freeBypassForDev){
-          const payment = {
-            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
-            provider: 'revolut_demo',
-            status: 'active',
-            orderId: 'demo-'+Date.now(),
-            amount: PAYMENT_CONFIG.revolut.price,
-            createdAt: Date.now(),
-            expiry: Date.now()+30*24*60*60*1000
-          };
-          savePayment(payment);
-          showPaymentSuccess('Revolut (démo)', payment.orderId);
+      subscribeLabel.textContent = `Acheter à vie pour ${prod.price}`;
+      subscribeBtn.innerHTML = `<span>♾️</span><span>Acheter à vie - ${prod.price} une fois</span>`;
+    }
+    // Affiche bon bouton store
+    const plat = getPlatform();
+    appleBtn.style.display = plat==='ios' ? 'flex' : 'none';
+    googleBtn.style.display = plat==='android' ? 'flex' : 'none';
+    webBtn.style.display = plat==='web' ? 'flex' : 'none';
+  }
+
+  storePlans.forEach(plan=>{
+    plan.addEventListener('click', ()=> selectPlan(plan.dataset.product));
+  });
+  selectPlan('annual');
+
+  function openStoreOverlay(){
+    storeOverlay.hidden=false;
+    selectPlan(selectedProduct);
+    if(typeof closeBurgerMenu==='function') closeBurgerMenu();
+    const plat = getPlatform();
+    appleBtn.style.display = plat==='ios' ? 'flex' : 'none';
+    googleBtn.style.display = plat==='android' ? 'flex' : 'none';
+    webBtn.style.display = 'flex'; // toujours visible en démo
+  }
+  function closeStoreOverlay(){ storeOverlay.hidden=true; }
+
+  // Simulation achat web (démo) - en prod remplacé par StoreKit / Play Billing
+  async function purchaseWeb(productId){
+    const prod = PRODUCTS[productId];
+    const btn = subscribeBtn;
+    btn.disabled=true;
+    btn.innerHTML='<span>⏳</span><span>Traitement App Store / Play Store...</span>';
+    
+    await new Promise(r=>setTimeout(r, 1200)); // simule Store
+
+    const now = Date.now();
+    let expiry;
+    let trialStart = null;
+    
+    if(prod.type==='lifetime'){
+      expiry = now + 100*365*24*60*60*1000; // 100 ans
+    }else{
+      if(prod.trial){
+        trialStart = now;
+        // Pendant essai, expiry = fin essai + période
+        // Mensuel: essai 3j + 1 mois, Annuel: essai 3j + 1 an
+        const periodMs = productId==='monthly' ? 30*24*60*60*1000 : 365*24*60*60*1000;
+        expiry = now + TRIAL_DAYS*24*60*60*1000 + periodMs;
+      }else{
+        expiry = now + (productId==='monthly' ? 30*24*60*60*1000 : 365*24*60*60*1000);
+      }
+    }
+
+    const data = {
+      product: productId,
+      productId: prod.id,
+      status: 'active',
+      platform: getPlatform(),
+      purchaseDate: now,
+      trialStart: trialStart,
+      trialEnd: trialStart ? trialStart + TRIAL_DAYS*24*60*60*1000 : null,
+      expiry: expiry,
+      isTrial: !!trialStart,
+      price: prod.priceValue,
+      transactionId: 'trans_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+      originalTransactionId: 'orig_'+Date.now()
+    };
+    
+    saveStoreData(data);
+    btn.disabled=false;
+    btn.innerHTML='<span>✅</span><span>Abonnement activé !</span>';
+    
+    setTimeout(()=>{
+      closeStoreOverlay();
+      updateAccountUI();
+      alert(`✅ ${prod.trial ? `Essai gratuit ${TRIAL_DAYS} jours activé !` : 'Achat à vie activé !'}\n\nProduit: ${prod.title} (${prod.id})\nExpire: ${new Date(expiry).toLocaleDateString()}\n\nEn prod, cet achat serait géré par Apple Store / Play Store.`);
+      location.reload();
+    }, 800);
+  }
+
+  // Vrais achats natifs (Capacitor + RevenueCat)
+  async function purchaseNative(productId){
+    const prod = PRODUCTS[productId];
+    const platform = getPlatform();
+    
+    // Option 1: RevenueCat (recommandé - gère App Store + Play Store + essais + webhooks)
+    if(window.RevenueCat){
+      try{
+        const offering = await RevenueCat.getOfferings();
+        const pkg = offering.current?.availablePackages?.find(p=>p.identifier===productId);
+        if(pkg){
+          const result = await RevenueCat.purchasePackage(pkg);
+          if(result.customerInfo.entitlements.active['pro']){
+            // Active
+            const data = {
+              product: productId,
+              productId: prod.id,
+              status: 'active',
+              platform: platform,
+              purchaseDate: Date.now(),
+              expiry: new Date(result.customerInfo.entitlements.active['pro'].expirationDate).getTime(),
+              isTrial: result.customerInfo.entitlements.active['pro'].periodType==='TRIAL',
+              transactionId: result.transaction?.transactionIdentifier
+            };
+            saveStoreData(data);
+            closeStoreOverlay();
+            updateAccountUI();
+            return;
+          }
         }
+      }catch(e){
+        console.error('RevenueCat error', e);
+        alert('Erreur achat: '+e.message);
         return;
       }
-      window.open(link, '_blank');
-      setTimeout(()=>{
-        if(confirm('As-tu effectué le paiement Revolut ? Clique OK pour activer Pro (en prod, webhook automatique)')){
-          const payment = {
-            email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
-            provider: 'revolut.me',
-            status: 'active',
-            orderId: 'revolut-'+Date.now(),
-            amount: PAYMENT_CONFIG.revolut.price,
-            createdAt: Date.now(),
-            expiry: Date.now()+30*24*60*60*1000
-          };
-          savePayment(payment);
-          showPaymentSuccess('Revolut.me', payment.orderId);
-        }
-      }, 1500);
     }
-  });
 
-  revolutLinkBtn?.addEventListener('click', ()=>{
-    const link = PAYMENT_CONFIG.revolut.revolutMeLink;
-    if(link.includes('tonpseudo')){
-      // démo gratuite
-      if(confirm('Lien Revolut.me non configuré. Débloquer Pro en mode démo gratuit ?')){
-        const payment = {
-          email: (localStorage.getItem('app_auth_current_v2')||'guest').toLowerCase(),
-          provider: 'revolut_demo',
-          status: 'active',
-          orderId: 'demo-'+Date.now(),
-          amount: 0,
-          createdAt: Date.now(),
-          expiry: Date.now()+30*24*60*60*1000
-        };
-        savePayment(payment);
-        showPaymentSuccess('Démo gratuite', payment.orderId);
+    // Option 2: Capacitor In-App Purchases (natif pur)
+    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.InAppPurchases){
+      try{
+        const {InAppPurchases} = window.Capacitor.Plugins;
+        await InAppPurchases.purchase({productId: prod.id});
+        // Le plugin envoie event purchaseUpdated - écoute-le pour activer
+        // Pour démo on simule
+        await purchaseWeb(productId);
+        return;
+      }catch(e){
+        console.error('IAP error', e);
       }
-      return;
     }
-    window.open(link, '_blank');
-  });
 
-  paymentCancelBtn?.addEventListener('click', closePaymentOverlay);
-  paymentRestoreBtn?.addEventListener('click', ()=>{
-    if(isProActive()){
-      alert('Abonnement Pro déjà actif jusqu\'au '+new Date(getPaymentExpiry()).toLocaleDateString());
+    // Fallback web si pas natif
+    await purchaseWeb(productId);
+  }
+
+  // Restore purchases
+  async function restorePurchases(){
+    const btn = restoreBtn;
+    const origText = btn.textContent;
+    btn.textContent='⏳ Restauration...';
+    btn.disabled=true;
+    
+    await new Promise(r=>setTimeout(r, 1000));
+    
+    // En prod: RevenueCat.restorePurchases() ou StoreKit restore
+    const data = getStoreData();
+    if(data && data.status==='active' && Date.now() < data.expiry){
+      btn.textContent='✅ Abonnement restauré !';
+      setTimeout(()=>{ btn.textContent=origText; btn.disabled=false; closeStoreOverlay(); updateAccountUI(); }, 1200);
     }else{
-      // tente restauration via localStorage
-      const p = getPayment();
-      if(p && p.expiry && Date.now() < p.expiry){
-        p.status='active'; savePayment(p);
-        alert('Achat restauré ✅ Pro jusqu\'au '+new Date(p.expiry).toLocaleDateString());
-        closePaymentOverlay();
-        location.reload();
+      // Simule pas d'achat trouvé
+      btn.textContent='Aucun achat trouvé';
+      setTimeout(()=>{ btn.textContent=origText; btn.disabled=false; }, 2000);
+    }
+  }
+
+  // Gère abonnement -> ouvre App Store / Play Store settings
+  function manageSubscription(){
+    const plat = getPlatform();
+    if(plat==='ios'){
+      // Ouvre gestion abos iOS
+      window.open('https://apps.apple.com/account/subscriptions', '_blank');
+      alert('Sur iPhone: Réglages → Ton nom → Abonnements pour gérer/annuler.');
+    }else if(plat==='android'){
+      window.open('https://play.google.com/store/account/subscriptions', '_blank');
+      alert('Sur Android: Play Store → Profil → Paiements et abonnements → Abonnements.');
+    }else{
+      alert('Sur le web: abonnement géré localement (démo). En prod, gère via App Store Connect / Play Console.');
+    }
+  }
+
+  // Events
+  subscribeBtn?.addEventListener('click', ()=> purchaseNative(selectedProduct));
+  appleBtn?.addEventListener('click', ()=> purchaseNative(selectedProduct));
+  googleBtn?.addEventListener('click', ()=> purchaseNative(selectedProduct));
+  webBtn?.addEventListener('click', ()=> purchaseWeb(selectedProduct));
+  restoreBtn?.addEventListener('click', restorePurchases);
+  storeOverlay?.addEventListener('click', (e)=>{ if(e.target===storeOverlay) closeStoreOverlay(); });
+
+  // Account UI
+  function updateAccountUI(){
+    const btn = document.getElementById('userAccountBtn');
+    const avatar = document.getElementById('userAvatar');
+    const menuEmail = document.getElementById('userMenuEmail');
+    const menuStatus = document.getElementById('userMenuStatus');
+    const trialBadge = document.getElementById('userMenuTrialBadge');
+    const statusCard = document.getElementById('storeStatusText');
+    const expiryText = document.getElementById('storeExpiryText');
+    
+    const data = getStoreData();
+    const pro = isProActive();
+    const trial = isInTrial();
+    
+    if(btn){
+      if(pro){
+        btn.classList.add('pro');
+        if(trial) btn.classList.add('trial');
+        else btn.classList.remove('trial');
+        if(avatar) avatar.textContent='⭐';
       }else{
-        alert('Aucun achat trouvé. Paie avec PayPal ou Revolut.');
+        btn.classList.remove('pro','trial');
+        if(avatar) avatar.textContent='👤';
       }
     }
-  });
+    
+    if(menuEmail) menuEmail.textContent = pro ? (trial ? 'Pro (Essai)' : 'Pro Actif') : 'Gratuit';
+    if(menuStatus){
+      if(pro && trial){
+        menuStatus.innerHTML=`<span style="color:#10b981">●</span> Essai ${getTrialDaysLeft()}j restants`;
+        menuStatus.style.color='#10b981';
+      }else if(pro){
+        menuStatus.innerHTML=`<span style="color:#10b981">●</span> Pro - ${PRODUCTS[data?.product]?.title || 'Actif'}`;
+      }else{
+        menuStatus.innerHTML='<span style="color:var(--text-muted)">●</span> Gratuit';
+      }
+    }
+    if(trialBadge) trialBadge.style.display = trial ? 'block' : 'none';
+    
+    if(statusCard){
+      if(!data) statusCard.textContent='Aucun abonnement. Essai gratuit 3 jours disponible.';
+      else if(data.product==='lifetime') statusCard.textContent='♾️ Achat à vie actif - Accès illimité à vie';
+      else if(trial) statusCard.textContent=`🎁 Essai gratuit ${getTrialDaysLeft()}j restants, puis ${PRODUCTS[data.product]?.price}/${PRODUCTS[data.product]?.period}`;
+      else if(pro) statusCard.textContent=`✅ ${PRODUCTS[data.product]?.title} actif`;
+      else statusCard.textContent='Abonnement expiré';
+    }
+    if(expiryText){
+      const exp = getExpiryDate();
+      if(exp) expiryText.textContent = data?.product==='lifetime' ? 'Jamais n\'expire' : `Expire le ${exp.toLocaleDateString()} à ${exp.toLocaleTimeString()}`;
+      else expiryText.textContent='';
+    }
+  }
 
-  paymentOverlay?.addEventListener('click', (e)=>{ if(e.target===paymentOverlay) closePaymentOverlay(); });
+  // Bouton compte
+  function initAccountBtn(){
+    const btn = document.getElementById('userAccountBtn');
+    const menu = document.getElementById('userMenu');
+    if(!btn || !menu) return;
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+      if(!menu.hidden) updateAccountUI();
+    });
+    document.addEventListener('click', (e)=>{
+      if(menu && !menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)){
+        menu.hidden=true;
+      }
+    });
+    
+    document.getElementById('userMenuUpgradeBtn')?.addEventListener('click', ()=>{ menu.hidden=true; openStoreOverlay(); });
+    document.getElementById('userMenuRestoreBtn')?.addEventListener('click', ()=>{ menu.hidden=true; restorePurchases(); openStoreOverlay(); });
+    document.getElementById('userMenuManageBtn')?.addEventListener('click', ()=>{ menu.hidden=true; manageSubscription(); });
+    document.getElementById('userMenuApiBtn')?.addEventListener('click', ()=>{
+      if(!isProActive()){
+        menu.hidden=true;
+        openStoreOverlay();
+        return;
+      }
+      menu.hidden=true;
+      if(typeof openKeyPanel==='function') openKeyPanel();
+    });
+    document.getElementById('userMenuLogoutBtn')?.addEventListener('click', ()=>{
+      if(confirm('Déconnexion ? Ton abonnement reste lié à ton compte Store (Apple/Google), pas supprimé.')){
+        localStorage.removeItem('app_auth_current_v2');
+        menu.hidden=true;
+        updateAccountUI();
+      }
+    });
+  }
 
-  // Override openKeyPanelSecure pour exiger paiement
+  // Override openKeyPanel pour exiger Pro
   window.addEventListener('load', ()=>{
     setTimeout(()=>{
-      // Sauvegarde original
-      if(window.openKeyPanelSecure && !window._origOpenKeyPanelSecure){
-        window._origOpenKeyPanelSecure = window.openKeyPanelSecure;
-        window.openKeyPanelSecure = function(){
+      initAccountBtn();
+      updateAccountUI();
+      
+      // Sauvegarde original openKeyPanel
+      if(typeof openKeyPanel==='function' && !window._origOpenKeyPanelStore){
+        window._origOpenKeyPanelStore = openKeyPanel;
+        window.openKeyPanel = function(){
           if(!isProActive()){
-            openPaymentOverlay('api_key');
+            openStoreOverlay();
             return;
           }
-          window._origOpenKeyPanelSecure();
+          window._origOpenKeyPanelStore();
         };
       }
-      // Si pas de secure wrapper mais openKeyPanel existe
-      if(window._origOpenKeyPanel && !window._origOpenKeyPanelWithPayment){
-        window._origOpenKeyPanelWithPayment = window._origOpenKeyPanel;
-        window._origOpenKeyPanel = function(){
-          if(!isProActive()){
-            openPaymentOverlay('api_key');
-            return;
-          }
-          window._origOpenKeyPanelWithPayment();
-        };
+      
+      // Auto-promo si pas Pro après 2 sec
+      const data = getStoreData();
+      if(!data && !localStorage.getItem('store_promo_shown')){
+        setTimeout(()=>{
+          localStorage.setItem('store_promo_shown','1');
+          // Ne pas auto-ouvrir trop agressif, juste badge
+          console.log('Store: promo essai 3j disponible');
+        }, 3000);
       }
-    }, 1200);
+    }, 800);
   });
 
-  // Expose
-  window.__payment = {isProActive, getPayment, openPaymentOverlay, PAYMENT_CONFIG, clearPayment};
+  window.__store = {isProActive, isInTrial, getStoreData, openStoreOverlay, PRODUCTS, getPlatform, purchaseWeb, restorePurchases};
 })();
 </script>
-<script src="https://merchant.revolut.com/embed.js"></script>
-
-
-<script>
-window.addEventListener('load', ()=>{
-  setTimeout(()=>{
-    const loggedSection = document.getElementById('userMenuLoggedSection');
-    if(!loggedSection || document.getElementById('paymentMenuSection')) return;
-    const sec = document.createElement('div');
-    sec.id='paymentMenuSection';
-    sec.style.cssText='display:flex;flex-direction:column;gap:6px';
-    const isPro = window.__payment?.isProActive?.() || false;
-    const payment = JSON.parse(localStorage.getItem('app_payment_pro_v1')||'null');
-    sec.innerHTML=`
-      <div class="user-menu-divider"></div>
-      <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.5px;color:var(--text-muted);text-transform:uppercase;padding:4px 2px">💳 Abonnement</div>
-      <div style="padding:10px 12px;border-radius:10px;background:${isPro ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(6,182,214,0.12))' : 'var(--surface-2)'};border:1px solid ${isPro ? 'rgba(16,185,129,0.3)' : 'var(--border)'};font-size:0.8rem">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:700">${isPro ? '⭐ Pro Actif' : '🆓 Gratuit'}</span>
-          <span class="badge-pro" style="display:${isPro ? 'inline-flex' : 'none'}">PRO</span>
-        </div>
-        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">
-          ${isPro ? `Payé via ${payment?.provider || ''} • Expire ${new Date(payment.expiry).toLocaleDateString()}` : 'Clé API bloquée — Passe Pro pour débloquer'}
-        </div>
-      </div>
-      <button class="user-menu-item primary" id="upgradeProBtn" style="display:${isPro ? 'none' : 'flex'}">
-        <span>💳</span><span>Passer Pro - 4,99€</span><span>→</span>
-      </button>
-      <button class="user-menu-item" id="manageSubBtn" style="display:${isPro ? 'flex' : 'none'}">
-        <span>⚙️</span><span>Gérer abonnement</span>
-      </button>
-    `;
-    loggedSection.appendChild(sec);
-    document.getElementById('upgradeProBtn')?.addEventListener('click', ()=>{ document.getElementById('userMenu').hidden=true; window.__payment?.openPaymentOverlay(); });
-    document.getElementById('manageSubBtn')?.addEventListener('click', ()=>{ 
-      const p = JSON.parse(localStorage.getItem('app_payment_pro_v1')||'null');
-      if(p) alert(`Abonnement Pro\nProvider: ${p.provider}\nMontant: ${p.amount}€\nExpire: ${new Date(p.expiry).toLocaleString()}\nOrder: ${p.orderId}`);
-      else alert('Aucun abonnement');
-    });
-  }, 1400);
-});
-</script>
+<script src="https://cdn.jsdelivr.net/npm/capacitor-inapp-purchases@1.0.0/dist/index.js"></script>
+<!-- RevenueCat Web SDK - décommente si tu utilises RevenueCat -->
+<!-- <script src="https://sdk.revenuecat.com/js/v1/revenuecat.js"></script> -->
 
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
