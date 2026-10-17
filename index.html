@@ -581,6 +581,26 @@ async function fetchLiveFromNearbyStops(stops, destName, tileOverride, fallbackD
     let _dn=_n(destName);
     let _lid=function(p){return _n(p);};
     let _dig=function(p){let m=String(p).match(/\d+/);return m?m[0]:_n(p);};
+    /* Anciennes dalles sans parcours enregistré : on reconstruit le parcours exact (lignes de la dalle) et on le sauvegarde. */
+    window.__bd_migrating=window.__bd_migrating||{};
+    for(let _i=0;_i<_tiles.length;_i++){
+      let _t=_tiles[_i];
+      if(_t.routePrefs||!(_n(_t.to)===_dn||_same(_t.to,destName))||window.__bd_migrating[_t.id]) continue;
+      window.__bd_migrating[_t.id]=1;
+      try{
+        let _cs=await bdGetConns(_t.from,_t.to,function(){});
+        let _routes=bdUniqueRoutes(_cs.map(function(c){return {products:c.products||[],transfers:c.transfers||0};}));
+        let _al={};String(_t.linesPref||"").split(",").map(function(x){return x.trim();}).filter(Boolean).forEach(function(x){_al[_n(x)]=1;});
+        let _has=Object.keys(_al).length>0;
+        let _keys=_routes.filter(function(r){return !_has||(r.products||[]).every(function(p){return _al[_dig(p)];});}).map(bdRouteKey);
+        if(_keys.length){
+          let _rp=_keys.join("||");
+          _tiles[_i]=Object.assign({},_t,{routePrefs:_rp});
+          nt(function(old){return old.map(function(x){return x.id===_t.id&&!x.routePrefs?Object.assign({},x,{routePrefs:_rp}):x;});});
+        }
+      }catch(e){}
+      delete window.__bd_migrating[_t.id];
+    }
     all=all.filter(function(conn){
       let starts=[conn._fromStop,conn.from&&conn.from.station];
       let mine=_tiles.filter(function(t){
