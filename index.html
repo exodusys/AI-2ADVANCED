@@ -520,11 +520,10 @@ async function fetchLiveFromNearbyStops(stops, destName, tileOverride, fallbackD
     if(_dep.length>=2) selected=[{name:_dep,selected:true,kind:"stop",distanceKm:0,isAddr:true}];
   }
   if(!destName||selected.length===0){ go([]); return; }
-  /* Dalle active : mêmes lignes que celles enregistrées dans la dalle (uniquement si la destination correspond). */
-  let _tiles=window.__bd_tiles||fn||[];
-  let _aid=("__bd_activeId" in window)?window.__bd_activeId:On;
-  let activeTile=tileOverride||_tiles.find(function(t){return t.id===_aid;});
-  if(activeTile&&String(activeTile.to||"").trim().toLowerCase()!==String(destName).trim().toLowerCase()) activeTile=null;
+  /* Dalles reconnues : si départ + destination correspondent à une dalle, seules ses lignes sont conservées. */
+  let _tiles=(window.__bd_tiles||fn||[]).slice();
+  if(tileOverride&&!_tiles.some(function(t){return t.id===tileOverride.id;})) _tiles.push(tileOverride);
+  if(tileOverride) _tiles=_tiles.map(function(t){return t.id===tileOverride.id?tileOverride:t;});
   ba(true);
   try{
     let all=[];
@@ -574,21 +573,35 @@ async function fetchLiveFromNearbyStops(stops, destName, tileOverride, fallbackD
     /* Uniquement la fenêtre demandée (1 h par défaut, +30 min par clic). */
     let _hMs=Date.now()+(window.__bd_horizon||60)*60000;
     all=all.filter(function(c){return c._sort>=Date.now()-60000&&c._sort<=_hMs;});
-    /* Une dalle ouverte en Live doit reprendre exactement les parcours sélectionnés lors de sa sauvegarde. */
-    if(activeTile){
-      let savedRouteKeys=bdSelectedRouteKeys(activeTile.routePrefs||"");
-      if(savedRouteKeys.length){
-        all=all.filter(function(conn){return savedRouteKeys.includes(bdRouteKey(conn));});
-      }else if(activeTile.linesPref){
-        let savedLines=String(activeTile.linesPref).split(",").map(function(x){return x.trim();}).filter(Boolean);
-        if(savedLines.length){
-          all=all.filter(function(conn){
-            let connLines=(conn.products||[]).map(function(x){let m=String(x).match(/\d+/);return m?m[0]:String(x);});
-            return connLines.length>0&&connLines.every(function(x){return savedLines.includes(x);});
-          });
+    /* Filtre strict : uniquement les lignes (bus/train) sélectionnées dans la ou les dalles reconnues. */
+    let _n=function(x){return String(x||"").trim().toLowerCase().replace(/\s+/g," ");};
+    let _same=function(a,b){a=_n(a);b=_n(b);if(!a||!b)return false;return a===b||(a.length>=3&&b.length>=3&&(a.indexOf(b)>=0||b.indexOf(a)>=0));};
+    let _dn=_n(destName);
+    let _lid=function(p){return _n(p);};
+    let _dig=function(p){let m=String(p).match(/\d+/);return m?m[0]:_n(p);};
+    all=all.filter(function(conn){
+      let starts=[conn._fromStop,conn.from&&conn.from.station];
+      let mine=_tiles.filter(function(t){
+        if(_n(t.to)!==_dn&&!_same(t.to,destName)) return false;
+        return starts.some(function(x){return _same(t.from,x);});
+      });
+      if(!mine.length) return true;
+      let full={},dig={},useDig=false;
+      mine.forEach(function(t){
+        let keys=bdSelectedRouteKeys(t.routePrefs||"");
+        if(keys.length){
+          keys.forEach(function(k){String(k).split("|")[0].split(">").forEach(function(p){if(p.trim())full[_lid(p)]=1;});});
+        }else if(t.linesPref){
+          String(t.linesPref).split(",").map(function(x){return x.trim();}).filter(Boolean).forEach(function(x){dig[_n(x)]=1;});
+          useDig=true;
+        }else{
+          useDig=true;
         }
-      }
-    }
+      });
+      let prods=(conn.products||[]).filter(Boolean);
+      if(!prods.length) return false;
+      return prods.every(function(p){return full[_lid(p)]||(useDig&&dig[_dig(p)]);});
+    });
     go(all);
   }catch(e){ go([]); }
   finally{ ba(false); }
